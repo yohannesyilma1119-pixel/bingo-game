@@ -8,173 +8,123 @@
     <style>
         body { background-color: #0f021a; color: white; text-align: center; font-family: sans-serif; margin: 0; padding: 10px; }
         
-        /* Header Section (ልክ በምስሉ ላይ እንዳለው) */
-        .header-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; padding-top: 10px; }
-        .info-box { border: 2px solid #0088cc; border-radius: 8px; padding: 5px 10px; min-width: 70px; background: #1a1a1a; font-size: 12px; }
+        /* Header Info */
+        .header-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 15px; }
+        .info-box { border: 1px solid #0088cc; border-radius: 8px; padding: 5px; min-width: 65px; background: #1a1a1a; font-size: 11px; }
         .info-box span { color: #0088cc; display: block; font-weight: bold; }
 
-        /* Number Buttons Grid */
-        .selection-grid { 
-            display: grid; 
-            grid-template-columns: repeat(10, 1fr); 
-            gap: 6px; 
-            max-width: 100%; 
-            background: #1a1a1a; 
-            padding: 15px; 
-            border-radius: 15px; 
-            margin-bottom: 30px;
-        }
-        .num-btn { 
-            background: #e67e22; 
-            color: white; 
-            border: none; 
-            padding: 12px 0; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .num-btn:active { background: #d35400; transform: scale(0.9); }
+        /* Number Buttons (1-100) */
+        .selection-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; max-width: 400px; margin: 0 auto; background: #1a1a1a; padding: 10px; border-radius: 12px; }
+        .num-btn { background: #e67e22; color: white; border: none; padding: 12px 0; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        /* Timer & Game Screens */
-        .hidden { display: none; }
-        .timer { font-size: 60px; color: #f1c40f; margin: 30px 0; font-weight: bold; }
-        
+        /* Timer Position - ከካርቴላው በላይ ባለው ክፍት ቦታ */
+        #game-timer { font-size: 50px; color: #f1c40f; font-weight: bold; margin: 10px 0; min-height: 60px; }
+
         /* Bingo Card Styling */
-        .bingo-card { background: #27ae60; color: white; border: 4px solid #fff; border-radius: 12px; width: 320px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .bingo-card { background: #27ae60; color: white; border: 4px solid #fff; border-radius: 12px; width: 320px; margin: 0 auto; }
         table { border-collapse: collapse; width: 100%; }
-        th { background: #1e8449; padding: 10px; font-size: 22px; border-bottom: 2px solid #fff; }
-        td { border: 1px solid #fff; width: 55px; height: 55px; text-align: center; font-size: 22px; font-weight: bold; cursor: pointer; }
-        .marked { background: #f1c40f !important; color: black; position: relative; }
-        .marked::after { content: '✔'; color: red; position: absolute; top: 2px; left: 10px; font-size: 35px; }
+        th { background: #1e8449; padding: 8px; font-size: 20px; border: 1px solid #fff; }
+        td { border: 1px solid #fff; width: 55px; height: 55px; text-align: center; font-size: 22px; font-weight: bold; cursor: pointer; position: relative; }
+        .marked { background: #f1c40f !important; color: black; }
+        .marked::after { content: 'X'; color: red; position: absolute; font-size: 40px; left: 14px; top: 4px; opacity: 0.8; }
         .free-space { background: #f39c12; font-size: 10px; color: black; }
 
-        /* Winner Message */
-        #winner-popup { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95); border: 3px solid #f1c40f; padding: 40px;
-            border-radius: 20px; z-index: 100; display: none; width: 80%;
-        }
+        .hidden { display: none; }
+        #winner-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); border: 3px solid #f1c40f; padding: 30px; border-radius: 15px; display: none; z-index: 100; width: 80%; }
     </style>
 </head>
 <body>
 
     <div id="lobby">
-        <h1 style="color: #f1c40f; margin: 10px 0;">BINGO HUB</h1>
-        
+        <h1 style="color: #f1c40f; margin: 5px;">BINGO HUB</h1>
         <div class="header-bar">
-            <div class="info-box">Game <span>240226</span></div>
             <div class="info-box">Bet <span>10 ETB</span></div>
-            <div class="info-box">Active Game <span>1</span></div>
             <div class="info-box">Wallet <span>0.30 ETB</span></div>
         </div>
-
-        <div class="selection-grid" id="grid-container">
-            </div>
-    </div>
-
-    <div id="waiting" class="hidden">
-        <h2 style="color: #f1c40f; margin-top: 50px;">ጨዋታው ሊጀመር ነው...</h2>
-        <div class="timer" id="countdown">30</div>
-        <p>ካርቴላዎ በመዘጋጀት ላይ ነው</p>
+        <div class="selection-grid" id="grid"></div>
     </div>
 
     <div id="game-screen" class="hidden">
-        <h2 id="card-id-label" style="color: #f1c40f;">ካርቴላ #</h2>
-        <div id="bingo-card-box" class="bingo-card"></div>
-        <button onclick="location.reload()" style="margin-top:20px; padding:12px 30px; background:#e67e22; color:white; border:none; border-radius:8px; font-weight:bold;">ተመለስ</button>
+        <div id="game-timer">30</div>
+        <h3 id="card-num" style="color: #f1c40f; margin: 5px;">ካርቴላ #</h3>
+        <div id="card-box" class="bingo-card"></div>
+        <button onclick="location.reload()" style="margin-top:15px; padding:10px 20px; background:#e67e22; color:white; border:none; border-radius:5px;">ተመለስ</button>
     </div>
 
-    <div id="winner-popup">
-        <h1 style="color: #f1c40f; font-size: 45px; margin: 0;">BINGO!</h1>
-        <p style="font-size: 20px;">እንኳን ደስ አለህ አሸንፈሃል!</p>
-        <button onclick="location.reload()" style="padding: 10px 20px; background: #f1c40f; border: none; font-weight: bold; border-radius: 5px;">ቀጥል</button>
+    <div id="winner-msg">
+        <h1 style="color: #f1c40f;">🎉 BINGO! 🎉</h1>
+        <p>እንኳን ደስ አለህ አሸንፈሃል!</p>
+        <button onclick="location.reload()" style="padding:10px 20px; background:#f1c40f; border:none; font-weight:bold;">ቀጥል</button>
     </div>
 
     <script>
-        // 1. ቁጥሮቹን (1-130) መፍጠር
-        const container = document.getElementById('grid-container');
-        for (let i = 1; i <= 130; i++) {
+        const grid = document.getElementById('grid');
+        for (let i = 1; i <= 100; i++) {
             let btn = document.createElement('button');
             btn.className = 'num-btn';
             btn.innerText = i;
-            btn.onclick = () => startBingo(i);
-            container.appendChild(btn);
+            btn.onclick = () => startGame(i);
+            grid.appendChild(btn);
         }
 
-        // 2. ቆጣሪውን ማስጀመር
-        function startBingo(id) {
+        function startGame(id) {
             document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('waiting').classList.remove('hidden');
-            
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('card-num').innerText = "ካርቴላ #" + id;
+            generateCard(id);
+
             let time = 30;
-            const timerInterval = setInterval(() => {
+            const t = setInterval(() => {
                 time--;
-                document.getElementById('countdown').innerText = time;
+                document.getElementById('game-timer').innerText = time;
                 if(time <= 0) {
-                    clearInterval(timerInterval);
-                    generateCard(id);
+                    clearInterval(t);
+                    document.getElementById('game-timer').innerText = "ተጀመረ!";
                 }
             }, 1000);
         }
 
-        // 3. ቋሚ ካርቴላ ማመንጨት
         function generateCard(id) {
-            document.getElementById('waiting').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('card-id-label').innerText = "ካርቴላ #" + id;
-
             const seed = parseInt(id);
-            const B = getNums(seed, 1, 15);
-            const I = getNums(seed + 10, 16, 30);
-            const N = getNums(seed + 20, 31, 45);
-            const G = getNums(seed + 30, 46, 60);
-            const O = getNums(seed + 40, 61, 75);
-
-            let html = `<table><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>`;
-            for (let i = 0; i < 5; i++) {
-                html += '<tr>';
-                html += `<td onclick="mark(this)">${B[i]}</td>`;
-                html += `<td onclick="mark(this)">${I[i]}</td>`;
-                if(i === 2) html += `<td class="free-space marked">FREE</td>`;
-                else html += `<td onclick="mark(this)">${N[i]}</td>`;
-                html += `<td onclick="mark(this)">${G[i]}</td>`;
-                html += `<td onclick="mark(this)">${O[i]}</td></tr>`;
-            }
-            document.getElementById('bingo-card-box').innerHTML = html + '</table>';
-        }
-
-        function getNums(seed, min, max) {
-            let res = [];
-            let s = seed;
-            while(res.length < 5) {
-                s = (s * 9301 + 49297) % 233280;
-                let val = Math.floor((s / 233280) * (max - min + 1)) + min;
-                if(!res.includes(val)) res.push(val);
-            }
-            return res.sort((a,b) => a-b);
-        }
-
-        function mark(el) {
-            el.classList.toggle('marked');
-            checkWinner();
-        }
-
-        function checkWinner() {
-            const cells = document.querySelectorAll('td');
-            const m = Array.from(cells).map(c => c.classList.contains('marked'));
-            let win = false;
+            const cols = [getN(seed,1,15), getN(seed+1,16,30), getN(seed+2,31,45), getN(seed+3,46,60), getN(seed+4,61,75)];
+            let h = `<table><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>`;
             for(let i=0; i<5; i++) {
-                if(m[i*5] && m[i*5+1] && m[i*5+2] && m[i*5+3] && m[i*5+4]) win = true; // Row
-                if(m[i] && m[i+5] && m[i+10] && m[i+15] && m[i+20]) win = true; // Col
+                h += '<tr>';
+                for(let j=0; j<5; j++) {
+                    if(i==2 && j==2) h += `<td class="free-space marked">FREE</td>`;
+                    else h += `<td onclick="mark(this)">${cols[j][i]}</td>`;
+                }
+                h += '</tr>';
             }
-            if(win) {
-                document.getElementById('winner-popup').style.display = 'block';
-                const speech = new SpeechSynthesisUtterance("BINGO! You are the winner!");
-                window.speechSynthesis.speak(speech);
+            document.getElementById('card-box').innerHTML = h + '</table>';
+        }
+
+        function getN(s, min, max) {
+            let r = [];
+            while(r.length < 5) {
+                s = (s * 9301 + 49297) % 233280;
+                let v = Math.floor((s/233280)*(max-min+1))+min;
+                if(!r.includes(v)) r.push(v);
+            }
+            return r.sort((a,b)=>a-b);
+        }
+
+        function mark(el) { el.classList.toggle('marked'); checkWin(); }
+
+        function checkWin() {
+            const m = Array.from(document.querySelectorAll('td')).map(td => td.classList.contains('marked'));
+            let w = false;
+            for(let i=0; i<5; i++) {
+                if(m[i*5]&&m[i*5+1]&&m[i*5+2]&&m[i*5+3]&&m[i*5+4]) w = true; // Row
+                if(m[i]&&m[i+5]&&m[i+10]&&m[i+15]&&m[i+20]) w = true; // Col
+            }
+            if((m[0]&&m[6]&&m[12]&&m[18]&&m[24]) || (m[4]&&m[8]&&m[12]&&m[16]&&m[20])) w = true; // Diagonal
+            if(m[0]&&m[4]&&m[20]&&m[24]) w = true; // 4 Corners
+            if(w) { 
+                document.getElementById('winner-msg').style.display='block';
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Bingo!"));
             }
         }
-        window.Telegram.WebApp.ready();
     </script>
 </body>
 </html>
