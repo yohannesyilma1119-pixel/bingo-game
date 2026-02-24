@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>የቢንጎ ካርቴላ</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; }
+        .card-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px; }
+        .bingo-card { background: white; border: 3px solid #333; border-radius: 10px; padding: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); width: 300px; }
+        table { border-collapse: collapse; margin: 0 auto; width: 100%; }
+        th, td { border: 2px solid #333; width: 50px; height: 50px; text-align: center; font-size: 1.2rem; font-weight: bold; }
+        th { background-color: #d32f2f; color: white; }
+        .free-space { background-color: #ffc107; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <h1>የቢንጎ ካርቴላዎች</h1>
+    <div id="cards" class="card-container"></div>
+
+    <script>
+        function getNumbers(min, max, count) {
+            let nums = [];
+            while(nums.length < count) {
+                let r = Math.floor(Math.random() * (max - min + 1)) + min;
+                if(!nums.includes(r)) nums.push(r);
+            }
+            return nums.sort((a, b) => a - b);
+        }
+
+        function createCard(id) {
+            const B = getNumbers(1, 15, 5);
+            const I = getNumbers(16, 30, 5);
+            const N = getNumbers(31, 45, 5);
+            const G = getNumbers(46, 60, 5);
+            const O = getNumbers(61, 75, 5);
+
+            let tableHTML = `<div class="bingo-card"><h3>ካርቴላ #${id}</h3><table>`;
+            tableHTML += '<tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>';
+            for (let i = 0; i < 5; i++) {
+                tableHTML += '<tr>';
+                tableHTML += `<td>${B[i]}</td><td>${I[i]}</td>`;
+                if (i === 2) tableHTML += `<td class="free-space">FREE</td>`;
+                else tableHTML += `<td>${N[i]}</td>`;
+                tableHTML += `<td>${G[i]}</td><td>${O[i]}</td></tr>`;
+            }
+            tableHTML += '</table></div>';
+            return tableHTML;
+        }
+
+        const container = document.getElementById('cards');
+        for (let i = 1; i <= 100; i++) {
+            container.innerHTML += createCard(i);
+        }
+    </script>
+</body>
+</html>
