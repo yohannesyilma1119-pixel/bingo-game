@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bingo Hub - Fixed Preview</title>
+    <title>Bingo Hub - Final Layout</title>
     <style>
         :root { 
             --primary-bg: #d1b3ff; 
@@ -23,71 +23,94 @@
         }
 
         .header-title {
-            font-size: 28px; font-weight: 900; color: white;
+            font-size: 26px; font-weight: 900; color: white;
             text-shadow: 2px 2px 0px var(--panel-purple);
             margin: 5px 0 10px 0;
         }
 
-        /* Dashboard */
+        /* Dashboard - Responsive 5 Columns */
         .dashboard {
             display: grid; grid-template-columns: repeat(5, 1fr);
-            width: 100%; max-width: 600px; gap: 5px; margin-bottom: 15px;
+            width: 100%; max-width: 600px; gap: 4px; margin-bottom: 12px;
         }
         .stat-item {
             background: white; border-radius: 8px; padding: 6px 2px;
             text-align: center; box-shadow: 0 3px 0px #b380ff;
         }
-        .stat-label { font-size: 7px; color: var(--panel-purple); font-weight: bold; display: block; }
+        .stat-label { font-size: 8px; color: var(--panel-purple); font-weight: bold; display: block; }
         .stat-val { font-size: 12px; font-weight: bold; color: #333; }
 
-        /* Selection Screen - Adjusted for better view */
-        #select-screen { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; }
-        
+        /* Selection Screen */
+        #select-screen { width: 100%; max-width: 500px; text-align: center; }
         .scroll-container { 
             background: white; border-radius: 12px; padding: 8px; border: 2px solid var(--panel-purple); 
-            height: 250px; overflow-y: scroll; margin-bottom: 10px; width: 95%;
+            height: 250px; overflow-y: scroll; margin-bottom: 10px;
         }
         .selection-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
         .sel-btn { 
             background: var(--accent-orange); color: white; border: none; padding: 10px 0; 
             border-radius: 6px; font-weight: bold; font-size: 12px;
         }
-        .sel-btn.active { background: #2ecc71 !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.3); }
+        .sel-btn.active { background: #2ecc71 !important; }
 
-        /* Preview Label */
-        .preview-header {
-            background: var(--panel-purple); color: white; width: 90%;
-            padding: 8px; border-radius: 10px 10px 0 0; font-weight: bold;
-            text-align: center; font-size: 16px;
-        }
-
-        /* Fixed Preview Card - Now BIGGER and CLEARER */
+        /* Preview Box */
         #preview-box {
-            background: var(--bingo-gold); padding: 10px;
-            border-radius: 0 0 15px 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            width: 85%; max-width: 320px; min-height: 200px;
-            display: flex; justify-content: center; align-items: center;
+            background: var(--bingo-gold); padding: 10px; margin-top: 10px;
+            border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: 85%; max-width: 300px;
         }
 
+        /* --- Game Layout (Side by Side) --- */
+        .game-layout { 
+            display: flex; width: 100%; max-width: 800px; 
+            gap: 10px; justify-content: center; align-items: flex-start;
+        }
+
+        /* Left side: 1-75 Board */
+        .left-board {
+            flex: 0.35; background: rgba(255, 255, 255, 0.4); 
+            border-radius: 10px; padding: 5px; 
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+        }
+        .num-slot {
+            aspect-ratio: 1; background: white; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: bold; color: #ccc;
+        }
+        .num-called { background: var(--accent-orange) !important; color: white !important; }
+
+        /* Right side: Current Ball & Card */
+        .right-area { 
+            flex: 0.65; display: flex; flex-direction: column; 
+            align-items: center; gap: 10px; 
+        }
+
+        .call-circle {
+            background: var(--panel-purple); color: white; width: 80px; height: 80px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: bold; border: 4px solid var(--bingo-gold);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Premium Card */
+        .card-frame {
+            background: var(--bingo-gold); padding: 6px; border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2); width: 100%;
+        }
         table { border-collapse: separate; border-spacing: 4px; width: 100%; }
         .b-header td { color: #7d3c98; font-size: 20px; font-weight: 900; text-align: center; }
-        
         .card-cell {
             width: 18%; aspect-ratio: 1; background: var(--cell-white);
-            border-radius: 6px; text-align: center; font-size: 18px; font-weight: bold;
-            color: var(--text-dark); box-shadow: inset 0 -3px 0 #ecf0f1;
+            border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;
+            color: var(--text-dark); cursor: pointer; box-shadow: inset 0 -3px 0 #eee;
         }
         .cell-active { background: #2ecc71 !important; color: white !important; }
 
-        /* Game UI */
-        .game-layout { display: flex; width: 100%; max-width: 750px; gap: 8px; }
-        .numbers-grid { flex: 0.3; background: rgba(255, 255, 255, 0.4); border-radius: 10px; padding: 5px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
-        .num-slot { aspect-ratio: 1; background: white; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: #ddd; }
-        .num-called { background: var(--accent-orange) !important; color: white !important; }
-        .play-area { flex: 0.7; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .call-circle { background: var(--panel-purple); color: white; width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; border: 4px solid var(--bingo-gold); }
-        .bingo-button { background: var(--accent-orange); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-size: 24px; font-weight: bold; box-shadow: 0 5px 0 #d35400; }
-        
+        .bingo-btn {
+            background: var(--accent-orange); color: white; border: none; width: 100%;
+            padding: 16px; border-radius: 12px; font-size: 24px; font-weight: bold;
+            box-shadow: 0 6px 0 #d35400; cursor: pointer;
+        }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -100,29 +123,26 @@
         <div class="stat-item"><span class="stat-label" id="lbl2">TIME</span><div class="stat-val" id="val2">25</div></div>
         <div class="stat-item"><span class="stat-label" id="lbl3">DERASH</span><div class="stat-val" id="val3">0</div></div>
         <div class="stat-item"><span class="stat-label" id="lbl4">PLAYERS</span><div class="stat-val" id="val4">0</div></div>
-        <div class="stat-item"><span class="stat-label" id="lbl5">GAME ID</span><div class="stat-val" id="val5">#701</div></div>
+        <div class="stat-item"><span class="stat-label" id="lbl5">GAME ID</span><div class="stat-val" id="val5">#842</div></div>
     </div>
 
     <div id="select-screen">
         <div class="scroll-container"><div class="selection-grid" id="grid"></div></div>
-        <div class="preview-header" id="preview-title">ካርቴላ ይምረጡ</div>
         <div id="preview-box">
-            <div style="color: white; opacity: 0.6;">ካርቴላ ሲመርጡ እዚህ ይታያል</div>
+            <div style="color:white; font-size:14px;">ካርቴላ ይምረጡ</div>
         </div>
     </div>
 
     <div id="game-screen" class="hidden">
         <div class="game-layout">
-            <div class="numbers-grid" id="left-board"></div>
-            <div class="play-area">
+            <div class="left-board" id="num-grid-box"></div>
+
+            <div class="right-area">
                 <div class="call-circle" id="ball-view">?</div>
-                <div class="card-frame" style="background: var(--bingo-gold); padding: 8px; border-radius: 12px;">
-                    <table>
-                        <tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>
-                        <tbody id="bingo-body"></tbody>
-                    </table>
+                <div class="card-frame">
+                    <table id="card-table"></table>
                 </div>
-                <button class="bingo-button" onclick="checkBingo()">BINGO!</button>
+                <button class="bingo-btn" onclick="checkBingo()">BINGO!</button>
             </div>
         </div>
     </div>
@@ -134,31 +154,30 @@
 
         function enableAudio() { voiceReady = true; }
 
-        // Grid Initialization
+        // Init Grid
         const grid = document.getElementById('grid');
         for(let i=1; i<=200; i++) {
             let b = document.createElement('button'); b.className = 'sel-btn'; b.innerText = i; b.id = 'sel-'+i;
             b.onclick = () => {
                 if(selectedID) document.getElementById('sel-'+selectedID).classList.remove('active');
                 selectedID = i; b.classList.add('active');
-                document.getElementById('preview-title').innerText = "የተመረጠው ካርቴላ #" + i;
                 document.getElementById('preview-box').innerHTML = generateCardHTML(i, false);
             };
             grid.appendChild(b);
         }
 
-        // Left Board
-        const leftBoard = document.getElementById('left-board');
+        // Init Left Numbers Board
+        const numGrid = document.getElementById('num-grid-box');
         for(let i=1; i<=75; i++) {
             let d = document.createElement('div'); d.className = 'num-slot'; d.id = 'slot-'+i; d.innerText = i;
-            leftBoard.appendChild(d);
+            numGrid.appendChild(d);
         }
 
         // Timer
         const tInt = setInterval(() => {
             if(!gameStarted) {
                 timeLeft--; document.getElementById('val2').innerText = timeLeft;
-                let derash = (25 - timeLeft) * 20 + 400;
+                let derash = (25 - timeLeft) * 30 + 500;
                 document.getElementById('val3').innerText = derash;
                 document.getElementById('val4').innerText = Math.floor(derash/10);
                 if(timeLeft <= 0) { clearInterval(tInt); startGame(); }
@@ -170,9 +189,14 @@
             if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
             document.getElementById('select-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('lbl2').innerText = "CALL"; document.getElementById('val2').innerText = "0";
-            document.getElementById('lbl4').innerText = "ROOM"; document.getElementById('val4').innerText = "VIP-1";
-            document.getElementById('bingo-body').innerHTML = generateCardHTML(selectedID, true);
+            
+            // Update Dashboard: Change Wallet to Call Count, Keep Players
+            document.getElementById('lbl1').innerText = "CALL"; 
+            document.getElementById('val1').innerText = "0";
+            document.getElementById('lbl2').innerText = "ROOM"; 
+            document.getElementById('val2').innerText = "VIP-1";
+
+            document.getElementById('card-table').innerHTML = generateCardHTML(selectedID, true);
             
             setInterval(() => {
                 if(calledNums.length < 75) {
@@ -181,7 +205,7 @@
                     let L = bingoLetters[Math.floor((ball-1)/15)];
                     document.getElementById('ball-view').innerText = L + ball;
                     document.getElementById('slot-'+ball).classList.add('num-called');
-                    document.getElementById('val2').innerText = calledNums.length;
+                    document.getElementById('val1').innerText = calledNums.length;
                     if(voiceReady) speakAmharic(L, ball);
                 }
             }, 4500);
@@ -200,22 +224,21 @@
                 return r.sort((a,b)=>a-b);
             };
             const cols = [getN(seed,1,15), getN(seed+1,16,30), getN(seed+2,31,45), getN(seed+3,46,60), getN(seed+4,61,75)];
-            let h = '<table><tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>';
+            let h = '<tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>';
             for(let i=0; i<5; i++) {
                 h += '<tr>';
                 for(let j=0; j<5; j++) {
                     let v = cols[j][i];
-                    let cellClass = (i==2 && j==2) ? "card-cell cell-active" : "card-cell";
-                    let content = (i==2 && j==2) ? "★" : v;
-                    h += `<td class="${cellClass}" ${interactive ? `onclick="this.classList.toggle('cell-active')"` : ''}>${content}</td>`;
+                    let isFree = (i==2 && j==2);
+                    h += `<td class="card-cell ${isFree?'cell-active':''}" ${interactive ? `onclick="this.classList.toggle('cell-active')"` : ''}>${isFree?'★':v}</td>`;
                 }
                 h += '</tr>';
             }
-            return h + '</table>';
+            return h;
         }
 
         function checkBingo() {
-            const cells = Array.from(document.querySelectorAll('#bingo-body .card-cell'));
+            const cells = Array.from(document.querySelectorAll('#card-table .card-cell'));
             const marked = cells.map(td => td.classList.contains('cell-active'));
             const lastBall = calledNums[calledNums.length - 1];
             const patterns = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20],[0,4,20,24]];
