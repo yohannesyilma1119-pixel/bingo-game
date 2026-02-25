@@ -3,64 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bingo Hub - Large Selection</title>
+    <title>Bingo Hub - Live Preview & Taken Cards</title>
     <style>
         body { background-color: #d1b3ff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; }
         .hub-logo { color: #800080; font-weight: bold; font-size: 24px; text-shadow: 1px 1px white; margin: 5px 0; }
         
-        /* Stats Bar - Match Screenshot Style */
-        .top-stats { display: flex; justify-content: space-between; width: 100%; max-width: 480px; gap: 5px; margin-bottom: 10px; }
-        .stat-box { background: white; border: 2px solid #e6ccff; border-radius: 8px; flex: 1; padding: 5px; text-align: center; }
-        .stat-label { font-size: 10px; color: #8000ff; font-weight: bold; margin-bottom: 2px; }
-        .stat-val { font-size: 15px; font-weight: bold; color: #333; }
-        .timer-box { color: #ff8000; font-size: 22px; }
+        /* Stats Bar */
+        .top-stats { display: flex; justify-content: space-between; width: 100%; max-width: 480px; gap: 4px; margin-bottom: 10px; }
+        .stat-box { background: white; border-radius: 8px; flex: 1; padding: 8px 2px; text-align: center; border: 1px solid #b380ff; }
+        .stat-label { font-size: 10px; color: #8000ff; font-weight: bold; display: block; }
+        .stat-val { font-size: 16px; font-weight: bold; color: #333; }
 
-        /* Selection Screen - Larger Size Like Screenshot */
+        /* Selection Grid */
         #select-screen { width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; }
         .scroll-container { 
-            background: #e6ccff; 
-            border-radius: 12px; 
-            padding: 15px; 
-            border: 2px solid #b380ff; 
-            width: 95%; 
-            height: 350px; /* Increased height */
-            overflow-y: scroll; 
-            margin-bottom: 10px; 
+            background: white; border-radius: 15px; padding: 10px; border: 2px solid #b380ff; 
+            width: 96%; height: 400px; overflow-y: scroll; margin-bottom: 10px;
         }
-        .selection-grid { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 12px; /* Wider gap like screenshot */
-        }
+        .selection-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        
+        /* Button Styles */
         .sel-btn { 
-            background: #ff8000; 
-            color: white; 
-            border: none; 
-            padding: 12px 0; /* Larger buttons */
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 18px; /* Bigger font */
-            box-shadow: 0 3px 0 #cc6600;
+            background: #ff8000; color: white; border: none; padding: 12px 0; border-radius: 8px; 
+            cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 3px 0 #cc6600;
         }
         .sel-btn.active { background: #27ae60 !important; box-shadow: 0 3px 0 #1e8449 !important; }
-        .sel-btn.taken { background: #ccc; color: #666; box-shadow: none; cursor: default; } /* Already picked by others */
-
-        /* Preview Label & Card */
-        .preview-label { font-weight: bold; color: #800080; margin: 10px 0; font-size: 18px; }
-        .bingo-card { background: white; border-radius: 12px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        table { border-collapse: collapse; }
-        td { width: 48px; height: 46px; border: 1px solid #eee; text-align: center; font-weight: bold; font-size: 20px; }
-        .cell-marked { background: #27ae60 !important; color: white !important; }
-
-        /* Game Layout */
-        .main-game-area { display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 520px; }
-        .left-board { background: #e6ccff; border-radius: 10px; padding: 5px; }
-        .bn { width: 32px; height: 23px; background: #f0e6ff; border: 1px solid #d1b3ff; border-radius: 4px; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #bbb; font-weight: bold; margin: 2px; }
-        .bn-active { background: #27ae60 !important; color: white !important; }
         
-        .right-content { display: flex; flex-direction: column; gap: 10px; align-items: center; flex: 1; }
-        .bingo-btn { background: #ff8000; border: none; width: 100%; padding: 20px; color: white; font-size: 26px; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 6px 0 #cc6600; }
+        /* Taken (Greyed out) */
+        .sel-btn.taken { 
+            background: #d1d1d1 !important; color: #888 !important; 
+            box-shadow: none !important; cursor: not-allowed !important; opacity: 0.7;
+        }
+
+        /* Preview Area */
+        .preview-area { text-align: center; width: 100%; margin-top: 5px; }
+        .card-tag { background: white; padding: 5px 20px; border-radius: 20px; color: #800080; font-weight: bold; margin-bottom: 8px; display: inline-block; border: 1px solid #b380ff; }
+        
+        .bingo-card { background: white; border-radius: 12px; overflow: hidden; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: inline-block; }
+        table { border-collapse: collapse; }
+        td { width: 42px; height: 40px; border: 1px solid #eee; text-align: center; font-weight: bold; font-size: 18px; color: #444; }
+        .cell-marked { background: #27ae60 !important; color: white !important; }
 
         .hidden { display: none !important; }
     </style>
@@ -70,39 +52,28 @@
     <div class="hub-logo">BINGO HUB</div>
 
     <div id="select-stats" class="top-stats">
-        <div class="stat-box timer-box" id="timer-val">25</div>
-        <div class="stat-box"><div class="stat-label">Wallet</div><div class="stat-val" id="wallet-val">100.00</div></div>
-        <div class="stat-box"><div class="stat-label">Stake</div><div class="stat-val">10</div></div>
-        <div class="stat-box"><div class="stat-label">Derash</div><div class="stat-val" id="pre-d-val">0</div></div>
+        <div class="stat-box"><span class="stat-label">WALLET</span><div class="stat-val">100.00</div></div>
+        <div class="stat-box"><span class="stat-label">TIMER</span><div class="stat-val" id="timer-val">25</div></div>
+        <div class="stat-box"><span class="stat-label">DERASH</span><div class="stat-val" id="pre-d-val">0</div></div>
     </div>
 
     <div id="select-screen">
         <div class="scroll-container">
             <div class="selection-grid" id="grid"></div>
         </div>
-        <div class="preview-label" id="prev-tag">ካርቴላ ይምረጡ</div>
-        <div id="preview-box" class="bingo-card" style="zoom: 0.9;"></div>
-    </div>
-
-    <div id="game-screen" class="hidden">
-        <div class="main-game-area">
-            <div class="left-board" id="board-nums"></div>
-            <div class="right-content">
-                <div id="current-ball" style="font-size:28px; font-weight:bold; color:white; background:#ff8000; padding:10px 25px; border-radius:30px; border:3px solid #cc6600;">-</div>
-                <div id="card-box" class="bingo-card"></div>
-                <button class="bingo-btn" onclick="checkBingoManual()">BINGO!</button>
-            </div>
+        
+        <div class="preview-area">
+            <div class="card-tag" id="prev-tag">ካርቴላ ይምረጡ</div>
+            <div id="preview-box" class="bingo-card" style="zoom: 0.85;"></div>
         </div>
     </div>
 
     <script>
-        let wallet = 100.00; let players = 0; let derash = 0; let selectedID = null; 
-        let called = []; let callCount = 0; let timeLeft = 25; let gameStarted = false;
-        let audioEnabled = false;
+        let selectedID = null;
+        let timeLeft = 25;
+        let gameStarted = false;
 
-        function enableAudio() { audioEnabled = true; }
-
-        // Grid for 200 Cards - Improved Size
+        // Grid for 200 Cards
         const grid = document.getElementById('grid');
         for(let i=1; i<=200; i++) {
             let b = document.createElement('button');
@@ -110,36 +81,35 @@
             b.innerText = i;
             b.id = 'sel-'+i;
             
-            // Randomly mark some as "taken" like your screenshot
-            if(Math.random() < 0.3) {
+            // "Taken" logic: Randomly mark some cards as taken (e.g., numbers divisible by 6 or 11)
+            if(i % 6 === 0 || i % 11 === 0) {
                 b.classList.add('taken');
+                b.title = "ይህ ካርቴላ ተይዟል";
             } else {
                 b.onclick = () => {
                     if(!gameStarted) {
                         if(selectedID) document.getElementById('sel-'+selectedID).classList.remove('active');
                         selectedID = i; 
                         b.classList.add('active');
-                        document.getElementById('prev-tag').innerText = "Card #" + i;
-                        document.getElementById('preview-box').innerHTML = generateCardHTML(i, false);
+                        document.getElementById('prev-tag').innerText = "ካርቴላ #" + i;
+                        document.getElementById('preview-box').innerHTML = generateCardHTML(i);
                     }
                 };
             }
             grid.appendChild(b);
         }
 
-        // Timer & Stats Logic
-        const timerInt = setInterval(() => {
+        // Timer and Stats
+        const tInt = setInterval(() => {
             if(!gameStarted) {
                 timeLeft--;
                 document.getElementById('timer-val').innerText = timeLeft;
-                players += Math.floor(Math.random()*2)+1;
-                derash = players * 8;
-                document.getElementById('pre-d-val').innerText = derash;
-                if(timeLeft <= 0) { clearInterval(timerInt); startGame(); }
+                document.getElementById('pre-d-val').innerText = (25 - timeLeft) * 15;
+                if(timeLeft <= 0) { clearInterval(tInt); }
             }
         }, 1000);
 
-        function generateCardHTML(id, interactive) {
+        function generateCardHTML(id) {
             const seed = id * 55;
             const getN = (s, min, max) => {
                 let r = []; while(r.length<5) { s=(s*9301+49297)%233280; let v=Math.floor((s/233280)*(max-min+1))+min; if(!r.includes(v)) r.push(v); }
@@ -152,36 +122,13 @@
                 for(let j=0; j<5; j++) {
                     let v = cols[j][i];
                     if(i==2 && j==2) h += `<td class="cell-marked">★</td>`;
-                    else h += `<td ${interactive ? `onclick="mark(this, ${v})"` : ''}>${v}</td>`;
+                    else h += `<td>${v}</td>`;
                 }
                 h += '</tr>';
             }
             return h + '</table>';
         }
-
-        // Initialize Left Board (Game Mode)
-        const boardContainer = document.getElementById('board-nums');
-        const bCols = document.createElement('div'); bCols.style.display = 'flex'; bCols.style.gap = '2px';
-        ['B','I','N','G','O'].forEach((L, idx) => {
-            let col = document.createElement('div');
-            for(let i=1; i<=15; i++) {
-                let n = (idx * 15) + i;
-                let div = document.createElement('div'); div.className = 'bn'; div.id = 'n-'+n; div.innerText = n;
-                col.appendChild(div);
-            }
-            bCols.appendChild(col);
-        });
-        boardContainer.appendChild(bCols);
-
-        function startGame() {
-            gameStarted = true;
-            if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
-            document.getElementById('select-screen').classList.add('hidden');
-            document.getElementById('select-stats').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('card-box').innerHTML = generateCardHTML(selectedID, true);
-            // ... (Rest of game logic)
-        }
+        function enableAudio() { /* Audio trigger */ }
     </script>
 </body>
 </html>
