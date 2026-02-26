@@ -35,11 +35,11 @@
         .stat-label { font-size: 8px; color: #8e44ad; font-weight: bold; display: block; }
         .stat-val { font-size: 13px; font-weight: bold; color: #2f3640; }
 
-        /* View Mode Layout (Pic 2 style) */
+        /* View Mode Layout (Pic 2) */
         #select-screen { width: 100%; max-width: 500px; text-align: center; }
         .scroll-container { 
             background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 8px; 
-            height: 220px; overflow-y: scroll; margin-bottom: 10px; border: 1px solid white;
+            height: 220px; overflow-y: scroll; margin-bottom: 15px; border: 1px solid white;
         }
         .selection-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
         .sel-btn { 
@@ -48,11 +48,15 @@
         }
         .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; }
 
-        /* Preview Area */
-        .preview-label { background: var(--panel-purple); color: white; padding: 5px 20px; border-radius: 15px 15px 0 0; font-weight: bold; display: inline-block; }
-        #preview-box { display: flex; justify-content: center; margin-top: -5px; }
+        /* Preview Area - Fixed to always show below grid as per Pic 2 */
+        .preview-container { 
+            width: 100%; display: flex; flex-direction: column; align-items: center; 
+            margin-top: 10px; background: rgba(255, 255, 255, 0.2); padding: 10px; border-radius: 15px;
+        }
+        .preview-label { background: var(--panel-purple); color: white; padding: 5px 25px; border-radius: 20px; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+        #preview-box { width: 100%; display: flex; justify-content: center; min-height: 200px; }
 
-        /* Game Mode Layout (Pic 1 style) */
+        /* Game Mode Layout (Pic 1) */
         .game-layout { 
             display: flex; width: 100%; max-width: 450px; 
             gap: 10px; justify-content: center; align-items: flex-start;
@@ -76,19 +80,18 @@
         .call-circle { background: #ff8c00; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 3px solid white; }
 
         /* Card Frame */
-        .card-frame { background: white; padding: 5px; border-radius: 12px; border: 2px solid #8e44ad; }
+        .card-frame { background: white; padding: 5px; border-radius: 12px; border: 2px solid #8e44ad; width: 250px; }
         .bingo-table { width: 100%; border-collapse: collapse; }
-        .b-header td { background: #e74c3c; color: white; height: 35px; text-align: center; font-weight: bold; border: 1px solid #333; }
+        .b-header td { background: #e74c3c; color: white; height: 32px; text-align: center; font-weight: bold; border: 1px solid #333; font-size: 18px; }
         .card-cell { width: 20%; aspect-ratio: 1; text-align: center; font-size: 18px; font-weight: bold; border: 1px solid #333; cursor: pointer; }
         .cell-active { background: #119a4d !important; color: white !important; }
-        .free-cell { background: #f1c40f !important; font-size: 12px; }
+        .free-cell { background: #f1c40f !important; font-size: 11px; color: #8e44ad !important; }
 
         .bingo-btn {
             background: #ff8c00; color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-size: 24px; font-weight: bold; box-shadow: 0 6px 0 #cc6600;
         }
         .hidden { display: none !important; }
         
-        /* Win Popup */
         #win-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
             display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 1000;
@@ -107,9 +110,11 @@
 
     <div id="select-screen">
         <div class="scroll-container"><div class="selection-grid" id="grid"></div></div>
-        <div class="preview-label">የተመረጠው ካርቴላ</div>
-        <div id="preview-box">
-             <div style="background: white; padding: 20px; border-radius: 10px; color: #999;">ካርቴላ ይምረጡ...</div>
+        <div class="preview-container">
+            <div class="preview-label">የተመረጠው ካርቴላ</div>
+            <div id="preview-box">
+                 <div style="background: white; padding: 40px; border-radius: 10px; color: #999; width: 250px;">ካርቴላ ይምረጡ...</div>
+            </div>
         </div>
     </div>
 
@@ -121,7 +126,7 @@
                     <span>Current Call</span>
                     <div class="call-circle" id="ball-box">?</div>
                 </div>
-                <div class="card-frame">
+                <div class="card-frame" style="width: auto;">
                     <table class="bingo-table">
                         <tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>
                         <tbody id="game-card-body"></tbody>
@@ -152,7 +157,8 @@
             b.onclick = () => {
                 if(selectedID) document.getElementById('s-'+selectedID).classList.remove('active');
                 selectedID = i; b.classList.add('active');
-                document.getElementById('preview-box').innerHTML = `<div class="card-frame" style="width:260px;">${genCard(i, false)}</div>`;
+                // Pic 2 style preview
+                document.getElementById('preview-box').innerHTML = `<div class="card-frame">${genCard(i, false)}</div>`;
             };
             grid.appendChild(b);
         }
@@ -164,7 +170,7 @@
             numGrid.appendChild(d);
         }
 
-        // Timer Logic - Auto Enter Game Mode
+        // Timer Logic
         const tInt = setInterval(() => {
             if(!gameStarted) {
                 timeLeft--;
@@ -180,7 +186,7 @@
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('game-card-body').innerHTML = genCard(selectedID, true);
             
-            // Game Loop
+            // Start Calling Numbers
             setInterval(() => {
                 if(calledNums.length < 75) {
                     let b; do { b = Math.floor(Math.random()*75)+1; } while(calledNums.includes(b));
@@ -189,12 +195,14 @@
                     document.getElementById('ball-box').innerText = L + "-" + b;
                     document.getElementById('slot-'+b).classList.add('num-called');
                     document.getElementById('call-count').innerText = calledNums.length;
-                    if(voiceReady) {
-                        let am = L === 'B' ? 'ቢ' : L === 'I' ? 'አይ' : L === 'N' ? 'ኤን' : L === 'G' ? 'ጂ' : 'ኦ';
-                        let m = new SpeechSynthesisUtterance(`${am} ${b}`); m.lang = 'am-ET'; window.speechSynthesis.speak(m);
-                    }
+                    if(voiceReady) speak(L, b);
                 }
             }, 4200);
+        }
+
+        function speak(L, n) {
+            let am = L === 'B' ? 'ቢ' : L === 'I' ? 'አይ' : L === 'N' ? 'ኤን' : L === 'G' ? 'ጂ' : 'ኦ';
+            let m = new SpeechSynthesisUtterance(`${am} ${n}`); m.lang = 'am-ET'; window.speechSynthesis.speak(m);
         }
 
         function genCard(id, play) {
@@ -218,41 +226,29 @@
             return play ? h : `<table class="bingo-table"><tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>${h}</table>`;
         }
 
-        function showWinner(name, cardId) {
-            const popup = document.getElementById('winner-popup');
-            document.getElementById('winner-name').innerText = "አሸናፊ፡ " + name;
-            document.getElementById('winner-card-display').innerHTML = generateCardHTML(cardId);
-            popup.style.display = 'flex';
+        function checkBingo() {
+            const cells = Array.from(document.querySelectorAll('#game-card-body .card-cell'));
+            const marked = cells.map(td => td.classList.contains('cell-active'));
+            const lastBall = calledNums[calledNums.length - 1];
             
-            setTimeout(() => {
-                popup.style.display = 'none';
-                location.reload(); // ጨዋታውን እንደገና ለመጀመር
-            }, 5000);
-        }
-
-        // ካርቴላ ሰሪ (Helper)
-        function generateCardHTML(id) {
-            const seed = id * 55;
-            const getN = (s, min, max) => {
-                let r = []; while(r.length<5) { s=(s*9301+49297)%233280; let v=Math.floor((s/233280)*(max-min+1))+min; if(!r.includes(v)) r.push(v); }
-                return r.sort((a,b)=>a-b);
-            };
-            const cols = [getN(seed,1,15), getN(seed+1,16,30), getN(seed+2,31,45), getN(seed+3,46,60), getN(seed+4,61,75)];
-            let h = `<table>`;
-            for(let i=0; i<5; i++) {
-                h += '<tr>';
-                for(let j=0; j<5; j++) {
-                    let v = cols[j][i];
-                    let isFree = (i==2 && j==2);
-                    h += `<td class="${isFree ? 'marked' : ''}">${isFree ? '★' : v}</td>`;
+            const patterns = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24], // Hor
+                              [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24], // Ver
+                              [0,6,12,18,24],[4,8,12,16,20]]; // Diag
+            
+            let win = false;
+            for (let p of patterns) {
+                if (p.every(idx => marked[idx])) {
+                    let nums = p.map(idx => cells[idx].innerText === 'FREE' ? 'FREE' : parseInt(cells[idx].innerText));
+                    if (nums.includes(lastBall)) { win = true; break; }
                 }
-                h += '</tr>';
             }
-            return h + '</table>';
-        if (win) {
+
+            if (win) {
                 document.getElementById('win-overlay').classList.remove('hidden');
                 document.getElementById('winner-detail').innerText = `ተጫዋች፦ ጆ | ካርቴላ፦ #${selectedID}`;
             } else {
+                alert("ቁጥሩ አልፏል ወይም ገና ነህ!");
+            }
         }
     </script>
 </body>
