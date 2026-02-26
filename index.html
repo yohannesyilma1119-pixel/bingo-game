@@ -254,7 +254,9 @@
                 document.getElementById('win-overlay').classList.remove('hidden');
                 document.getElementById('winner-display').innerHTML = '<div class="card-header-info">CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
                 document.getElementById('winner-info').innerText = "አሸናፊ፡ ጆ | ካርቴላ #" + selectedID;
-            } else { alert("ቁጥሩ አልፏል ወይም ገና ነህ!"); }
+            } else { 
+                alert("ቁጥሩ አልፏል ወይም ገና ነህ!!"); 
+            }
         }
     </script>
 </body>
