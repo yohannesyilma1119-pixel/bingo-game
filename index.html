@@ -35,59 +35,63 @@
         .stat-label { font-size: 9px; color: #8e44ad; font-weight: bold; display: block; }
         .stat-val { font-size: 14px; font-weight: bold; color: #2f3640; }
 
-        /* View Mode (Selection) */
+        /* --- Selection Mode (Modified for better touch) --- */
         #select-screen { width: 100%; max-width: 500px; text-align: center; }
+        
         .scroll-container { 
-            background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 8px; 
-            height: 250px; overflow-y: scroll; margin-bottom: 15px; border: 1px solid white;
+            background: rgba(255, 255, 255, 0.4); 
+            border-radius: 15px; 
+            padding: 12px; 
+            height: 320px; /* Increased height for better view */
+            overflow-y: scroll; 
+            margin-bottom: 15px; 
+            border: 2px solid white;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
         }
-        .selection-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+
+        .selection-grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); /* 5 columns for larger buttons */
+            gap: 10px; 
+        }
+
         .sel-btn { 
-            background: #ff8c00; color: white; border: none; padding: 12px 0; 
-            border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 3px 0 #cc6600;
+            background: #ff8c00; 
+            color: white; 
+            border: none; 
+            padding: 15px 0; /* Larger padding for easier clicking */
+            border-radius: 10px; 
+            font-weight: bold; 
+            font-size: 18px; 
+            box-shadow: 0 4px 0 #cc6600;
+            transition: 0.1s;
         }
-        .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; }
+        .sel-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #cc6600; }
+        .sel-btn.active { background: #119a4d !important; box-shadow: 0 4px 0 #0d7a3d !important; }
 
         .preview-container { 
-            width: 100%; display: flex; flex-direction: column; align-items: center; 
-            background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 15px;
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background: rgba(255, 255, 255, 0.25); 
+            padding: 15px; 
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.5);
         }
-        #preview-box { width: 100%; display: flex; justify-content: center; min-height: 220px; }
+        /* --- End of Selection Style --- */
 
-        /* Game Mode Layout (Expanded) */
-        .game-layout { 
-            display: flex; width: 100%; max-width: 650px; 
-            gap: 12px; justify-content: center; align-items: stretch;
-        }
-
-        /* 1-75 Board - Columnar Style (B-I-N-G-O) */
-        .left-board {
-            flex: 0.45; background: #c8a2c8; border-radius: 12px; padding: 8px; 
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        .board-col-header {
-            text-align: center; font-weight: 900; color: white; font-size: 14px;
-            padding-bottom: 5px; border-bottom: 2px solid rgba(255,255,255,0.3);
-            margin-bottom: 5px;
-        }
-        .num-slot {
-            aspect-ratio: 1; background: #f8f9fa; border-radius: 5px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: bold; color: #bdc3c7;
-            border-bottom: 2px solid #ddd;
-        }
+        /* Game Mode Layout */
+        .game-layout { display: flex; width: 100%; max-width: 650px; gap: 12px; justify-content: center; align-items: stretch; }
+        .left-board { flex: 0.45; background: #c8a2c8; border-radius: 12px; padding: 8px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .board-col-header { text-align: center; font-weight: 900; color: white; font-size: 14px; padding-bottom: 5px; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 5px; }
+        .num-slot { aspect-ratio: 1; background: #f8f9fa; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #bdc3c7; border-bottom: 2px solid #ddd; }
         .num-called { background: #ff8c00 !important; color: white !important; border: none; box-shadow: inset 0 0 5px rgba(0,0,0,0.3); }
 
         .play-area { flex: 0.55; display: flex; flex-direction: column; gap: 12px; }
-        
-        .current-call-box {
-            background: #8e44ad; color: white; border-radius: 40px; 
-            padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
-        }
+        .current-call-box { background: #8e44ad; color: white; border-radius: 40px; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
         .call-circle { background: #ff8c00; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
 
-        /* Card Styling */
         .card-frame { background: white; padding: 6px; border-radius: 12px; border: 2.5px solid #8e44ad; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .bingo-table { width: 100%; border-collapse: collapse; }
         .b-header td { background: #e74c3c; color: white; height: 40px; text-align: center; font-weight: bold; border: 1px solid #333; font-size: 22px; }
@@ -95,14 +99,8 @@
         .cell-active { background: #119a4d !important; color: white !important; }
         .free-cell { background: #f1c40f !important; font-size: 12px; color: #8e44ad !important; }
 
-        .bingo-btn {
-            background: #ff8c00; color: white; border: none; width: 100%; padding: 18px; border-radius: 15px; font-size: 26px; font-weight: bold; box-shadow: 0 6px 0 #cc6600; cursor: pointer;
-        }
-        
-        #win-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 1000; text-align: center;
-        }
+        .bingo-btn { background: #ff8c00; color: white; border: none; width: 100%; padding: 18px; border-radius: 15px; font-size: 26px; font-weight: bold; box-shadow: 0 6px 0 #cc6600; cursor: pointer; }
+        #win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 1000; text-align: center; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -117,11 +115,13 @@
     </div>
 
     <div id="select-screen">
-        <div class="scroll-container"><div class="selection-grid" id="grid"></div></div>
+        <div class="scroll-container">
+            <div class="selection-grid" id="grid"></div>
+        </div>
         <div class="preview-container">
-            <div style="background: var(--panel-purple); color: white; padding: 5px 20px; border-radius: 20px; margin-bottom: 10px; font-weight: bold;">የተመረጠው ካርቴላ</div>
+            <div style="background: var(--panel-purple); color: white; padding: 6px 25px; border-radius: 20px; margin-bottom: 12px; font-weight: bold; font-size: 14px;">የተመረጠው ካርቴላ</div>
             <div id="preview-box">
-                 <div style="background: white; padding: 40px; border-radius: 10px; color: #999; width: 250px;">ካርቴላ ይምረጡ...</div>
+                 <div style="background: white; padding: 40px; border-radius: 10px; color: #999; width: 250px; font-weight: bold;">ካርቴላ ይምረጡ...</div>
             </div>
         </div>
     </div>
@@ -161,19 +161,23 @@
 
         function initAudio() { voiceReady = true; }
 
-        // Selection Grid
+        // Selection Grid - Adjusted for better UI
         const grid = document.getElementById('grid');
         for(let i=1; i<=200; i++) {
-            let b = document.createElement('button'); b.className = 'sel-btn'; b.innerText = i; b.id = 's-'+i;
+            let b = document.createElement('button'); 
+            b.className = 'sel-btn'; 
+            b.innerText = i; 
+            b.id = 's-'+i;
             b.onclick = () => {
                 if(selectedID) document.getElementById('s-'+selectedID).classList.remove('active');
-                selectedID = i; b.classList.add('active');
+                selectedID = i; 
+                b.classList.add('active');
                 document.getElementById('preview-box').innerHTML = `<div class="card-frame" style="width:260px;">${genCard(i, false)}</div>`;
             };
             grid.appendChild(b);
         }
 
-        // Build 1-75 Organized Board (B=1-15, I=16-30...)
+        // Build 1-75 Board
         const boardContainer = document.getElementById('num-grid-container');
         for(let row=0; row<15; row++) {
             for(let col=0; col<5; col++) {
