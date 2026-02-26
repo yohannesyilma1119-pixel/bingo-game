@@ -3,157 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bingo Hub Pro</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>BINGO HUB - Pro Edition</title>
     <style>
-        :root { --primary: #8000ff; --secondary: #ff8000; --bg: #d1b3ff; }
-        body { background-color: var(--bg); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        :root { 
+            --primary-bg: #d1b3ff; 
+            --panel-purple: #8e44ad;
+            --bingo-gold: #f1c40f;
+            --accent-orange: #ff8c00;
+            --cell-white: #ffffff;
+            --text-dark: #2c3e50;
+        }
+
+        body { 
+            background-color: var(--primary-bg); 
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 5px;
+            display: flex; flex-direction: column; align-items: center;
+            touch-action: manipulation;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            width: 98%; max-width: 600px; gap: 4px; margin-bottom: 12px;
+        }
+        .stat-item {
+            background: white; border-radius: 8px; padding: 6px 2px;
+            text-align: center; border: 1px solid #dcdde1;
+            box-shadow: 0 3px 0 #b380ff;
+        }
+        .stat-label { font-size: 8px; color: #8e44ad; font-weight: bold; display: block; }
+        .stat-val { font-size: 13px; font-weight: bold; color: #2f3640; }
+
+        /* View Mode Layout (Pic 2 style) */
+        #select-screen { width: 100%; max-width: 500px; text-align: center; }
+        .scroll-container { 
+            background: rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 8px; 
+            height: 220px; overflow-y: scroll; margin-bottom: 10px; border: 1px solid white;
+        }
+        .selection-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+        .sel-btn { 
+            background: #ff8c00; color: white; border: none; padding: 12px 0; 
+            border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 3px 0 #cc6600;
+        }
+        .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; }
+
+        /* Preview Area */
+        .preview-label { background: var(--panel-purple); color: white; padding: 5px 20px; border-radius: 15px 15px 0 0; font-weight: bold; display: inline-block; }
+        #preview-box { display: flex; justify-content: center; margin-top: -5px; }
+
+        /* Game Mode Layout (Pic 1 style) */
+        .game-layout { 
+            display: flex; width: 100%; max-width: 450px; 
+            gap: 10px; justify-content: center; align-items: flex-start;
+        }
+        .left-board {
+            flex: 0.35; background: #c8a2c8; border-radius: 10px; padding: 6px; 
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
+        }
+        .num-slot {
+            aspect-ratio: 1; background: #f8f9fa; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: bold; color: #bdc3c7;
+        }
+        .num-called { background: #ff8c00 !important; color: white !important; }
+
+        .play-area { flex: 0.65; display: flex; flex-direction: column; gap: 10px; }
+        .current-call-box {
+            background: #8e44ad; color: white; border-radius: 35px; 
+            padding: 8px 15px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .call-circle { background: #ff8c00; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 3px solid white; }
+
+        /* Card Frame */
+        .card-frame { background: white; padding: 5px; border-radius: 12px; border: 2px solid #8e44ad; }
+        .bingo-table { width: 100%; border-collapse: collapse; }
+        .b-header td { background: #e74c3c; color: white; height: 35px; text-align: center; font-weight: bold; border: 1px solid #333; }
+        .card-cell { width: 20%; aspect-ratio: 1; text-align: center; font-size: 18px; font-weight: bold; border: 1px solid #333; cursor: pointer; }
+        .cell-active { background: #119a4d !important; color: white !important; }
+        .free-cell { background: #f1c40f !important; font-size: 12px; }
+
+        .bingo-btn {
+            background: #ff8c00; color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-size: 24px; font-weight: bold; box-shadow: 0 6px 0 #cc6600;
+        }
+        .hidden { display: none !important; }
         
-        /* Layout Helpers */
-        .screen { display: none; flex-direction: column; align-items: center; width: 100vw; height: 100vh; padding: 10px; box-sizing: border-box; }
-        .active-screen { display: flex; }
-
-        /* Stats Bar */
-        .stats-bar { display: flex; width: 100%; max-width: 480px; gap: 5px; margin-bottom: 10px; }
-        .stat-box { background: white; flex: 1; border-radius: 8px; padding: 5px; text-align: center; border: 1px solid #b380ff; }
-        .stat-label { font-size: 9px; color: var(--primary); font-weight: bold; display: block; }
-        .stat-val { font-size: 14px; font-weight: bold; }
-
-        /* --- SCREEN 1: SELECTION --- */
-        .scroll-grid { background: white; border-radius: 12px; width: 90%; height: 250px; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .sel-btn { background: var(--secondary); color: white; border: none; padding: 10px 0; border-radius: 5px; font-weight: bold; }
-        .sel-btn.active { background: #27ae60; }
-        
-        /* --- SCREEN 2: GAME MODE --- */
-        .game-container { display: flex; width: 100%; gap: 10px; }
-        .bingo-board { background: #5a2d91; color: white; padding: 5px; border-radius: 8px; display: flex; flex-direction: column; width: 30%; }
-        .board-col { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 5px; font-size: 10px; }
-        .board-num { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%; }
-        .board-num.called { background: var(--secondary); font-weight: bold; }
-        
-        .current-call-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .call-circle { width: 80px; height: 80px; background: white; border-radius: 50%; border: 5px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
-        /* --- WINNER POPUP (Screen 3 & 4) --- */
-        #winner-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
-        .winner-card-view { transform: scale(0.8); background: white; padding: 10px; border-radius: 10px; margin-top: 10px; }
-
-        /* Bingo Card Styling */
-        .bingo-card { background: white; border-radius: 8px; border: 2px solid white; color: #333; margin-top: 10px; }
-        td { width: 35px; height: 35px; border: 1px solid #eee; text-align: center; font-weight: bold; }
-        .marked { background: #27ae60 !important; color: white; }
+        /* Win Popup */
+        #win-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 1000;
+        }
     </style>
 </head>
-<body>
+<body onclick="initAudio()">
 
-    <div id="selection-screen" class="screen active-screen">
-        <div class="stats-bar">
-            <div class="stat-box"><span class="stat-label">WALLET</span><div class="stat-val">100.00</div></div>
-            <div class="stat-box"><span class="stat-label">TIMER</span><div class="stat-val" id="timer">25</div></div>
-            <div class="stat-box"><span class="stat-label">STAKE</span><div class="stat-val">15.00</div></div>
-            <div class="stat-box"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
-        </div>
-        <div class="scroll-grid" id="grid"></div>
-        <div id="preview-area" style="margin-top:15px;">
-            <div id="card-preview" class="bingo-card"></div>
-            <button id="play-btn" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; margin-top:10px; font-weight:bold; display:none;" onclick="startGame()">ጨዋታውን ጀምር</button>
+    <div class="dashboard">
+        <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="d-val">2500</div></div>
+        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val" id="p-val">312</div></div>
+        <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">25</div></div>
+        <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-count">0</div></div>
+        <div class="stat-item"><span class="stat-label">GAME ID</span><div class="stat-val">#B-PRO</div></div>
+    </div>
+
+    <div id="select-screen">
+        <div class="scroll-container"><div class="selection-grid" id="grid"></div></div>
+        <div class="preview-label">የተመረጠው ካርቴላ</div>
+        <div id="preview-box">
+             <div style="background: white; padding: 20px; border-radius: 10px; color: #999;">ካርቴላ ይምረጡ...</div>
         </div>
     </div>
 
-    <div id="game-screen" class="screen">
-        <div class="stats-bar">
-            <div class="stat-box"><span class="stat-label">DERASH</span><div class="stat-val">450.00</div></div>
-            <div class="stat-box"><span class="stat-label">PLAYERS</span><div class="stat-val">32</div></div>
-            <div class="stat-box"><span class="stat-label">BET</span><div class="stat-val">15</div></div>
-            <div class="stat-box"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
-        </div>
-        
-        <div class="game-container">
-            <div class="bingo-board" id="main-board">
+    <div id="game-screen" class="hidden">
+        <div class="game-layout">
+            <div class="left-board" id="num-grid"></div>
+            <div class="play-area">
+                <div class="current-call-box">
+                    <span>Current Call</span>
+                    <div class="call-circle" id="ball-box">?</div>
                 </div>
-            <div class="current-call-area">
-                <span style="font-weight:bold; color:var(--primary)">CURRENT CALL</span>
-                <div class="call-circle" id="current-ball">-</div>
-                <div id="my-player-card" class="winner-card-view" style="zoom:0.6;"></div>
+                <div class="card-frame">
+                    <table class="bingo-table">
+                        <tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>
+                        <tbody id="game-card-body"></tbody>
+                    </table>
+                </div>
+                <button class="bingo-btn" onclick="checkBingo()">BINGO!</button>
             </div>
         </div>
     </div>
 
-    <div id="winner-popup">
-        <h1 style="color:var(--secondary); margin:0;">BINGO!</h1>
-        <h2 id="winner-name">አሸናፊ፡ ተጫዋች 12</h2>
-        <div id="winner-card-display" class="winner-card-view"></div>
-        <p>ቀጣይ ጨዋታ በ 5 ሰከንድ ይጀምራል...</p>
+    <div id="win-overlay" class="hidden">
+        <h1 style="font-size: 50px; color: #f1c40f;">YOU WIN! 🎉</h1>
+        <p id="winner-detail" style="font-size: 20px;"></p>
+        <button onclick="location.reload()" style="padding: 10px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; font-weight: bold;">ዳግም ጀምር</button>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        let selectedID = null; let timeLeft = 25; let gameStarted = false;
+        let calledNums = []; let voiceReady = false;
+        const letters = ['B','I','N','G','O'];
 
-        let selectedID = null;
-        let calledNumbers = [];
-        
-        // --- 1. ካርቴላዎችን መፍጠር ---
+        function initAudio() { voiceReady = true; }
+
+        // Setup Selection Grid
         const grid = document.getElementById('grid');
         for(let i=1; i<=200; i++) {
-            let b = document.createElement('button');
-            b.className = 'sel-btn';
-            b.innerText = i;
+            let b = document.createElement('button'); b.className = 'sel-btn'; b.innerText = i; b.id = 's-'+i;
             b.onclick = () => {
-                selectedID = i;
-                document.querySelectorAll('.sel-btn').forEach(btn => btn.classList.remove('active'));
-                b.classList.add('active');
-                document.getElementById('card-preview').innerHTML = generateCardHTML(i);
-                document.getElementById('play-btn').style.display = 'block';
-                tg.HapticFeedback.impactOccurred('light');
+                if(selectedID) document.getElementById('s-'+selectedID).classList.remove('active');
+                selectedID = i; b.classList.add('active');
+                document.getElementById('preview-box').innerHTML = `<div class="card-frame" style="width:260px;">${genCard(i, false)}</div>`;
             };
             grid.appendChild(b);
         }
 
-        // --- 2. ወደ Game Mode መግባት ---
+        // Setup 1-75 Board
+        const numGrid = document.getElementById('num-grid');
+        for(let i=1; i<=75; i++) {
+            let d = document.createElement('div'); d.className = 'num-slot'; d.id = 'slot-'+i; d.innerText = i;
+            numGrid.appendChild(d);
+        }
+
+        // Timer Logic - Auto Enter Game Mode
+        const tInt = setInterval(() => {
+            if(!gameStarted) {
+                timeLeft--;
+                document.getElementById('timer-val').innerText = timeLeft;
+                if(timeLeft <= 0) { clearInterval(tInt); startGame(); }
+            }
+        }, 1000);
+
         function startGame() {
-            document.getElementById('selection-screen').classList.remove('active-screen');
-            document.getElementById('game-screen').classList.add('active-screen');
-            document.getElementById('my-player-card').innerHTML = generateCardHTML(selectedID);
-            setupBoard();
-            startDrawing();
-        }
-
-        // --- 3. ቦርዱን ማዘጋጀት (B I N G O) ---
-        function setupBoard() {
-            const board = document.getElementById('main-board');
-            const letters = ['B', 'I', 'N', 'G', 'O'];
-            letters.forEach((l, idx) => {
-                let row = document.createElement('div');
-                row.className = 'board-col';
-                row.innerHTML = `<strong>${l}:</strong>`;
-                for(let n = (idx*15)+1; n <= (idx*15)+15; n++) {
-                    row.innerHTML += `<div class="board-num" id="bn-${n}">${n}</div>`;
-                }
-                board.appendChild(row);
-            });
-        }
-
-        // --- 4. ቁጥሮችን በየተራ ማውጣት ---
-        function startDrawing() {
-            let interval = setInterval(() => {
-                let ball = Math.floor(Math.random() * 75) + 1;
-                if(!calledNumbers.includes(ball)) {
-                    calledNumbers.push(ball);
-                    document.getElementById('current-ball').innerText = ball;
-                    let el = document.getElementById('bn-'+ball);
-                    if(el) el.classList.add('called');
-                    
-                    // በዘፈቀደ አሸናፊ መጣ ለማለት (ለሙከራ)
-                    if(calledNumbers.length === 20) {
-                        clearInterval(interval);
-                        showWinner("ተጫዋች #45", 45);
+            gameStarted = true;
+            if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
+            document.getElementById('select-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-card-body').innerHTML = genCard(selectedID, true);
+            
+            // Game Loop
+            setInterval(() => {
+                if(calledNums.length < 75) {
+                    let b; do { b = Math.floor(Math.random()*75)+1; } while(calledNums.includes(b));
+                    calledNums.push(b);
+                    let L = letters[Math.floor((b-1)/15)];
+                    document.getElementById('ball-box').innerText = L + "-" + b;
+                    document.getElementById('slot-'+b).classList.add('num-called');
+                    document.getElementById('call-count').innerText = calledNums.length;
+                    if(voiceReady) {
+                        let am = L === 'B' ? 'ቢ' : L === 'I' ? 'አይ' : L === 'N' ? 'ኤን' : L === 'G' ? 'ጂ' : 'ኦ';
+                        let m = new SpeechSynthesisUtterance(`${am} ${b}`); m.lang = 'am-ET'; window.speechSynthesis.speak(m);
                     }
                 }
-            }, 3000);
+            }, 4200);
         }
 
-        // --- 5. አሸናፊ ማሳያ (Pic 3 & 4) ---
+        function genCard(id, play) {
+            const seed = id * 55;
+            const getN = (s, min, max) => {
+                let r = []; while(r.length<5) { s=(s*9301+49297)%233280; let v=Math.floor((s/233280)*(max-min+1))+min; if(!r.includes(v)) r.push(v); }
+                return r.sort((a,b)=>a-b);
+            };
+            const cols = [getN(seed,1,15), getN(seed+1,16,30), getN(seed+2,31,45), getN(seed+3,46,60), getN(seed+4,61,75)];
+            let h = '';
+            for(let i=0; i<5; i++) {
+                h += '<tr>';
+                for(let j=0; j<5; j++) {
+                    let v = cols[j][i];
+                    let isF = (i==2 && j==2);
+                    let cls = isF ? "card-cell free-cell cell-active" : "card-cell";
+                    h += `<td class="${cls}" ${play ? `onclick="this.classList.toggle('cell-active')"` : ''}>${isF?'FREE':v}</td>`;
+                }
+                h += '</tr>';
+            }
+            return play ? h : `<table class="bingo-table"><tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>${h}</table>`;
+        }
+
         function showWinner(name, cardId) {
             const popup = document.getElementById('winner-popup');
             document.getElementById('winner-name').innerText = "አሸናፊ፡ " + name;
@@ -185,6 +249,10 @@
                 h += '</tr>';
             }
             return h + '</table>';
+        if (win) {
+                document.getElementById('win-overlay').classList.remove('hidden');
+                document.getElementById('winner-detail').innerText = `ተጫዋች፦ ጆ | ካርቴላ፦ #${selectedID}`;
+            } else {
         }
     </script>
 </body>
