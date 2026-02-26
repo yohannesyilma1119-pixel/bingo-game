@@ -34,56 +34,49 @@
         .stat-val { font-size: 12px; font-weight: bold; }
 
         /* --- SELECTION SCREEN --- */
-        #select-screen { 
-            width: 100%; max-width: 500px; 
-            display: flex; flex-direction: column; height: 90vh;
-        }
-        
-        .scroll-container { 
-            background: rgba(255, 255, 255, 0.6); border-radius: 15px; padding: 12px; 
-            flex: 1; overflow-y: auto; border: 2px solid white; margin-bottom: 10px;
-        }
-        
-        /* 8 በረድፍ እንዲሆን የተስተካከለ */
-        .selection-grid { 
-            display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; 
-        }
-        
-        .sel-btn { 
-            background: #ff8c00; color: white; border: none; padding: 10px 0; 
-            border-radius: 8px; font-weight: bold; font-size: 13px; 
-            box-shadow: 0 3px 0 #cc6600; cursor: pointer;
-        }
+        #select-screen { width: 100%; max-width: 500px; display: flex; flex-direction: column; height: 90vh; }
+        .scroll-container { background: rgba(255, 255, 255, 0.6); border-radius: 15px; padding: 12px; flex: 1; overflow-y: auto; border: 2px solid white; margin-bottom: 10px; }
+        .selection-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+        .sel-btn { background: #ff8c00; color: white; border: none; padding: 10px 0; border-radius: 8px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 0 #cc6600; cursor: pointer; }
         .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; transform: translateY(2px); }
-
-        .preview-container { 
-            background: white; padding: 10px; border-radius: 15px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 220px;
-        }
-        
+        .preview-container { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 220px; }
         #preview-box { width: 100%; display: flex; justify-content: center; transform: scale(0.85); }
 
-        /* --- GAME MODE --- */
-        .game-layout { display: flex; width: 100%; max-width: 650px; gap: 10px; padding: 5px; margin-top: 5px; }
+        /* --- GAME MODE (Expanded) --- */
+        .game-layout { 
+            display: flex; width: 100%; max-width: 800px; 
+            gap: 15px; padding: 10px; margin-top: 5px;
+            height: 75vh; align-items: stretch;
+        }
         
         .left-board {
-            flex: 0.45; background: #c8a2c8; border-radius: 10px; padding: 6px; 
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
+            flex: 1; background: #c8a2c8; border-radius: 12px; padding: 10px; 
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .board-header { text-align: center; font-weight: 900; color: white; font-size: 12px; }
-        .board-num { font-size: 11px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: white; border-radius: 4px; font-weight: bold; color: #bdc3c7; }
-        .num-called { background: #ff8c00 !important; color: white !important; }
+        .board-header { text-align: center; font-weight: 900; color: white; font-size: 18px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .board-num { 
+            font-size: 14px; aspect-ratio: 1; display: flex; align-items: center; 
+            justify-content: center; background: white; border-radius: 6px; 
+            font-weight: bold; color: #bdc3c7; border-bottom: 3px solid #ddd;
+        }
+        .num-called { background: #ff8c00 !important; color: white !important; border-bottom: none; transform: scale(0.95); }
 
-        .play-area { flex: 0.55; display: flex; flex-direction: column; gap: 10px; }
-        .call-circle { background: #ff8c00; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: bold; border: 4px solid white; margin: 0 auto; color: white; }
+        .play-area { flex: 1.2; display: flex; flex-direction: column; gap: 15px; justify-content: center; }
+        
+        .card-header-info {
+            background: var(--panel-purple); color: white; text-align: center;
+            padding: 5px; border-radius: 8px 8px 0 0; font-weight: bold; font-size: 14px;
+        }
 
-        .bingo-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; border: 2px solid #8e44ad; }
-        .b-header td { background: #e74c3c; color: white; text-align: center; font-weight: bold; border: 1px solid #333; height: 35px; font-size: 20px; }
-        .card-cell { width: 20%; aspect-ratio: 1; text-align: center; font-weight: bold; border: 1px solid #333; font-size: 19px; cursor: pointer; }
-        .cell-active { background: #119a4d !important; color: white !important; }
-        .free-cell { background: #f1c40f !important; font-size: 12px; color: #8e44ad !important; }
+        .call-circle { background: #ff8c00; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; border: 5px solid white; margin: 0 auto; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+
+        .bingo-table { width: 100%; border-collapse: collapse; background: white; overflow: hidden; border: 3px solid #8e44ad; }
+        .b-header td { background: #e74c3c; color: white; text-align: center; font-weight: bold; border: 1px solid #333; height: 45px; font-size: 24px; }
+        .card-cell { width: 20%; aspect-ratio: 1; text-align: center; font-weight: bold; border: 1px solid #333; font-size: 24px; cursor: pointer; }
+        .cell-active { background: #119a4d !important; color: white !important; position: relative; }
+        .cell-active::after { content: ''; position: absolute; width: 80%; height: 80%; border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; }
+        .free-cell { background: #f1c40f !important; font-size: 14px; color: #8e44ad !important; }
 
         #win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
         .hidden { display: none !important; }
@@ -100,15 +93,10 @@
     </div>
 
     <div id="select-screen">
-        <div class="scroll-container">
-            <div class="selection-grid" id="grid"></div>
-        </div>
-        
+        <div class="scroll-container"><div class="selection-grid" id="grid"></div></div>
         <div class="preview-container">
-            <div style="background: var(--panel-purple); color: white; padding: 4px 20px; border-radius: 15px; font-size: 13px; margin-bottom: 8px; font-weight: bold;">የካርቴላ እይታ</div>
-            <div id="preview-box">
-                 <div style="color: #999; margin-top: 40px; font-weight: bold;">ካርቴላ ይምረጡ...</div>
-            </div>
+            <div style="background: var(--panel-purple); color: white; padding: 4px 20px; border-radius: 15px; font-size: 13px; margin-bottom: 8px; font-weight: bold;">ካርቴላ እይታ</div>
+            <div id="preview-box"><div style="color: #999; margin-top: 40px; font-weight: bold;">ካርቴላ ይምረጡ...</div></div>
             <button id="start-btn" class="hidden" style="background:#119a4d; color:white; border:none; padding:12px 50px; border-radius:10px; font-weight:bold; margin-top:8px;" onclick="startGame()">ጨዋታውን ጀምር</button>
         </div>
     </div>
@@ -121,21 +109,22 @@
             </div>
             <div class="play-area">
                 <div class="call-circle" id="ball-box">?</div>
-                <div class="bingo-table-wrapper">
+                <div class="bingo-table-wrapper" style="box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+                    <div class="card-header-info" id="card-id-label">CARD #000</div>
                     <table class="bingo-table">
                         <tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>
                         <tbody id="game-card-body"></tbody>
                     </table>
                 </div>
-                <button style="background:#ff8c00; color:white; border:none; padding:15px; border-radius:10px; font-weight:bold; font-size:22px; box-shadow: 0 5px 0 #cc6600;" onclick="checkBingo()">BINGO!</button>
+                <button style="background:#ff8c00; color:white; border:none; padding:20px; border-radius:12px; font-weight:bold; font-size:26px; box-shadow: 0 6px 0 #cc6600;" onclick="checkBingo()">BINGO!</button>
             </div>
         </div>
     </div>
 
     <div id="win-overlay" class="hidden">
         <h1 style="font-size: 60px; color: #f1c40f; margin: 0;">YOU WIN! 🎉</h1>
-        <div id="winner-display" style="transform: scale(0.65); background: white; padding: 10px; border-radius: 15px; margin: 10px 0;"></div>
-        <p id="winner-info" style="font-size: 22px; font-weight: bold;"></p>
+        <div id="winner-display" style="transform: scale(0.6); background: white; padding: 10px; border-radius: 15px; margin: 5px 0;"></div>
+        <p id="winner-info" style="font-size: 24px; font-weight: bold;"></p>
         <button onclick="location.reload()" style="padding: 15px 40px; background: #ff8c00; color: white; border: none; border-radius: 10px; font-weight: bold;">ቀጣይ ጨዋታ</button>
     </div>
 
@@ -160,7 +149,7 @@
                 }
                 selectedID = i;
                 b.classList.add('active');
-                document.getElementById('preview-box').innerHTML = '<table class="bingo-table">' + genCardHTML(i, false) + '</table>';
+                document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:12px;">' + genCardHTML(i, false) + '</table>';
                 document.getElementById('start-btn').classList.remove('hidden');
             };
             grid.appendChild(b);
@@ -171,9 +160,7 @@
             for(let col=0; col<5; col++) {
                 let val = (col * 15) + row + 1;
                 let d = document.createElement('div');
-                d.className = 'board-num';
-                d.id = 'slot-' + val;
-                d.innerText = val;
+                d.className = 'board-num'; d.id = 'slot-' + val; d.innerText = val;
                 boardContainer.appendChild(d);
             }
         }
@@ -193,6 +180,7 @@
             if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
             document.getElementById('select-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
             document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
             
             setInterval(() => {
@@ -224,8 +212,7 @@
             for(let i=0; i<5; i++) {
                 h += '<tr>';
                 for(let j=0; j<5; j++) {
-                    let v = cols[j][i];
-                    let isF = (i==2 && j==2);
+                    let v = cols[j][i]; let isF = (i==2 && j==2);
                     h += `<td class="card-cell ${isF?'free-cell cell-active':''}" onclick="${play?'this.classList.toggle(\'cell-active\')':''}">${isF?'FREE':v}</td>`;
                 }
                 h += '</tr>';
@@ -247,7 +234,7 @@
             }
             if (win) {
                 document.getElementById('win-overlay').classList.remove('hidden');
-                document.getElementById('winner-display').innerHTML = '<table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
+                document.getElementById('winner-display').innerHTML = '<div class="card-header-info">CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
                 document.getElementById('winner-info').innerText = "አሸናፊ፡ ጆዬ | ካርቴላ #" + selectedID;
             } else { alert("ቁጥሩ አልፏል ወይም ገና ነህ!"); }
         }
