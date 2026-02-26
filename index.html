@@ -39,46 +39,53 @@
         .sel-btn { background: #ff8c00; color: white; border: none; padding: 10px 0; border-radius: 8px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 0 #cc6600; cursor: pointer; }
         .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; transform: translateY(2px); }
         .preview-container { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 200px; }
-        #preview-box { width: 100%; display: flex; justify-content: center; transform: scale(0.85); }
+        #preview-box { width: 100%; display: flex; justify-content: center; transform: scale(0.8); }
 
-        /* --- GAME MODE (Enhanced Layout) --- */
+        /* --- GAME MODE (Pic 2 Layout) --- */
         .game-layout { 
-            display: flex; width: 100%; max-width: 900px; 
-            gap: 10px; padding: 5px; margin-top: 5px;
-            height: 80vh; align-items: start;
+            display: flex; width: 100%; max-width: 480px; 
+            gap: 12px; padding: 10px; margin-top: 10px;
+            align-items: flex-start; justify-content: center;
         }
         
         .left-board {
-            flex: 0.8; /* ወደ ግራ ጠጋ እንዲል መጠኑ ተቀንሷል */
-            background: #c8a2c8; border-radius: 10px; padding: 8px; 
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 130px; background: #e0cfe0; border-radius: 12px; padding: 6px; 
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
         }
-        .board-header { text-align: center; font-weight: 900; color: white; font-size: 14px; }
+        .board-header { text-align: center; font-weight: 900; color: #8e44ad; font-size: 12px; margin-bottom: 2px; }
         .board-num { 
-            font-size: 12px; aspect-ratio: 1; display: flex; align-items: center; 
-            justify-content: center; background: white; border-radius: 4px; 
+            font-size: 11px; aspect-ratio: 1; display: flex; align-items: center; 
+            justify-content: center; background: white; border-radius: 3px; 
             font-weight: bold; color: #bdc3c7;
         }
         .num-called { background: #ff8c00 !important; color: white !important; }
 
         .play-area { 
-            flex: 1.5; /* ካርቴላው ሰፋ እንዲል ተጨምሯል */
-            display: flex; flex-direction: column; gap: 10px; 
+            flex: 1; display: flex; flex-direction: column; gap: 15px; align-items: center;
         }
         
+        .current-call-wrapper {
+            background: #8e44ad; border-radius: 40px; padding: 10px 20px;
+            display: flex; align-items: center; gap: 15px; width: 100%; box-sizing: border-box;
+        }
+        .call-text { color: white; font-weight: bold; font-size: 18px; flex: 1; }
+        .call-circle { background: #ff8c00; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; border: 4px solid white; color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        .card-container { width: 100%; position: relative; }
         .card-header-info {
             background: var(--panel-purple); color: white; text-align: center;
-            padding: 8px; border-radius: 10px 10px 0 0; font-weight: bold; font-size: 16px;
+            padding: 8px; border-radius: 12px 12px 0 0; font-weight: bold; font-size: 16px;
         }
 
-        .call-circle { background: #ff8c00; width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; border: 4px solid white; margin: 0 auto; color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .bingo-table { width: 100%; border-collapse: collapse; background: white; border: 2.5px solid #8e44ad; table-layout: fixed; }
+        .b-header td { background: #e74c3c; color: white; text-align: center; font-weight: bold; border: 1px solid #444; height: 35px; font-size: 20px; }
+        .card-cell { width: 20%; aspect-ratio: 1; text-align: center; font-weight: bold; border: 1px solid #444; font-size: 22px; cursor: pointer; color: #2c3e50; }
+        .cell-active { background: #119a4d !important; color: white !important; }
+        .free-cell { background: #f1c40f !important; font-size: 11px; color: #8e44ad !important; }
 
-        .bingo-table { width: 100%; border-collapse: collapse; background: white; border: 3px solid #8e44ad; }
-        .b-header td { background: #e74c3c; color: white; text-align: center; font-weight: bold; border: 1px solid #333; height: 40px; font-size: 22px; }
-        .card-cell { width: 20%; aspect-ratio: 1; text-align: center; font-weight: bold; border: 1px solid #333; font-size: 26px; cursor: pointer; }
-        .cell-active { background: #119a4d !important; color: white !important; position: relative; }
-        .free-cell { background: #f1c40f !important; font-size: 14px; color: #8e44ad !important; }
+        .bingo-btn { background:#ff8c00; color:white; border:none; width: 100%; padding:15px; border-radius:15px; font-weight:bold; font-size:26px; box-shadow: 0 6px 0 #cc6600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .bingo-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #cc6600; }
 
         #win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
         .hidden { display: none !important; }
@@ -109,23 +116,28 @@
                 <div class="board-header">B</div><div class="board-header">I</div><div class="board-header">N</div><div class="board-header">G</div><div class="board-header">O</div>
                 <div id="board-numbers" style="display: contents;"></div>
             </div>
+
             <div class="play-area">
-                <div class="call-circle" id="ball-box">?</div>
-                <div class="bingo-table-wrapper">
+                <div class="current-call-wrapper">
+                    <span class="call-text">Current<br>Call</span>
+                    <div class="call-circle" id="ball-box">?</div>
+                </div>
+
+                <div class="card-container">
                     <div class="card-header-info" id="card-id-label">CARD #000</div>
                     <table class="bingo-table">
                         <tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>
                         <tbody id="game-card-body"></tbody>
                     </table>
+                    <button class="bingo-btn" onclick="checkBingo()">BINGO!</button>
                 </div>
-                <button style="background:#ff8c00; color:white; border:none; padding:18px; border-radius:12px; font-weight:bold; font-size:24px; box-shadow: 0 5px 0 #cc6600;" onclick="checkBingo()">BINGO!</button>
             </div>
         </div>
     </div>
 
     <div id="win-overlay" class="hidden">
-        <h1 style="font-size: 55px; color: #f1c40f; margin: 0;">YOU WIN! 🎉</h1>
-        <div id="winner-display" style="transform: scale(0.6); background: white; padding: 10px; border-radius: 15px; margin: 5px 0;"></div>
+        <h1 style="font-size: 50px; color: #f1c40f; margin: 0;">YOU WIN! 🎉</h1>
+        <div id="winner-display" style="transform: scale(0.65); background: white; padding: 10px; border-radius: 15px; margin: 5px 0;"></div>
         <p id="winner-info" style="font-size: 24px; font-weight: bold;"></p>
         <button onclick="location.reload()" style="padding: 15px 40px; background: #ff8c00; color: white; border: none; border-radius: 10px; font-weight: bold;">ቀጣይ ጨዋታ</button>
     </div>
@@ -139,6 +151,7 @@
 
         function initAudio() { voiceReady = true; }
 
+        // Grid selection logic
         const grid = document.getElementById('grid');
         for(let i=1; i<=200; i++) {
             let b = document.createElement('button');
@@ -151,11 +164,12 @@
                 }
                 selectedID = i;
                 b.classList.add('active');
-                document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:10px;">' + genCardHTML(i, false) + '</table>';
+                document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:9px;">' + genCardHTML(i, false) + '</table>';
             };
             grid.appendChild(b);
         }
 
+        // Board numbers initialization
         const boardContainer = document.getElementById('board-numbers');
         for(let row=0; row<15; row++) {
             for(let col=0; col<5; col++) {
@@ -178,9 +192,7 @@
 
         function startGame() {
             gameStarted = true;
-            // ካርቴላ ካልተመረጠ በራሱ ይመርጣል
             if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
-            
             document.getElementById('select-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
