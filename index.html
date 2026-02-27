@@ -145,13 +145,12 @@
     </div>
 
     <script>
-        // ሜሞሪ ውስጥ ያለውን ብር ብቻ መጫን (50 ከሆነ 50 ይታያል)
         let wallet = parseInt(localStorage.getItem('bingoWallet')) || 50;
         document.getElementById('wallet-select').innerText = wallet;
 
         let selectedID = null;
         let gameStarted = false;
-        let hasPaid = false; // ብር መከፈሉን ለማረጋገጫ
+        let hasPaid = false; 
         let calledNums = [];
         let voiceReady = false;
         let callInterval = null;
@@ -170,13 +169,11 @@
             b.onclick = () => {
                 if(selectedID) document.querySelector('.sel-btn.active')?.classList.remove('active');
                 
-                // ካርቴላ ሲመረጥ ብቻ ብር ይቀነሳል (አንዴ ብቻ)
                 if (!hasPaid) {
                     if (wallet >= stake) {
                         wallet -= stake;
                         hasPaid = true;
                         document.getElementById('wallet-select').innerText = wallet;
-                        // ሜሞሪው ላይ ወዲያው አፕዴት እናድርገው
                         localStorage.setItem('bingoWallet', wallet);
                     } else {
                         alert("በቂ ብር የሎትም!");
@@ -214,7 +211,6 @@
         }, 1000);
 
         function startGame() {
-            // ተጫዋቹ ካርቴላ ሳይመርጥ ጊዜው ካለቀ
             if(!selectedID) {
                 if (wallet >= stake) {
                     wallet -= stake;
@@ -276,10 +272,15 @@
             const marked = cells.map(td => td.classList.contains('cell-active'));
             const lastBall = calledNums[calledNums.length - 1];
             
+            // "Full House" ተወግዶ 4ቱ ዋና ዋና መንገዶች ብቻ ተቀምጠዋል
             const patterns = [
+                // 1. Horizontal (ወደ ጎን)
                 [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
+                // 2. Vertical (ወደ ታች)
                 [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
+                // 3. Diagonal (ዲያጎናል)
                 [0,6,12,18,24],[4,8,12,16,20],
+                // 4. 4 Corners (አራቱ ማዕዘን)
                 [0,4,20,24]
             ];
 
@@ -287,6 +288,7 @@
             for (let p of patterns) {
                 if (p.every(idx => marked[idx])) {
                     let patternValues = p.map(idx => parseInt(cells[idx].getAttribute('data-val')));
+                    // አሸናፊ ለመሆን በመጨረሻ የወጣው ቁጥር በፓተርኑ ውስጥ መኖር አለበት
                     if (patternValues.includes(lastBall) || (p.includes(12) && lastBall !== undefined)) {
                          win = true; break;
                     }
@@ -297,7 +299,6 @@
                 clearInterval(callInterval); 
                 document.getElementById('wallet-update-msg').innerText = "እንኳን ደስ አለህ! የጨዋታው ደርሻ " + derashAmount + " ብር አሸንፈሃል!";
                 
-                // አሸናፊው 40 ነበረው + 40 አሸነፈ = 80 ሆኖ ሜሞሪ ላይ ይቀመጣል
                 let currentMem = parseInt(localStorage.getItem('bingoWallet'));
                 localStorage.setItem('bingoWallet', currentMem + derashAmount);
                 
