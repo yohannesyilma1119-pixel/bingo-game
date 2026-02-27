@@ -80,6 +80,11 @@
         .cell-active { background: #119a4d !important; color: white !important; }
         .free-cell { background: #f1c40f !important; font-size: 11px; color: #8e44ad !important; }
 
+        /* አዲስ ቅጦች ለአሸናፊው ካርቴላ እይታ */
+        .win-line-cell { background: #2ecc71 !important; color: white !important; border: 2px solid #27ae60; }
+        .last-ball-flash { animation: blinker 0.8s linear infinite; background: #e67e22 !important; color: white !important; }
+        @keyframes blinker { 50% { opacity: 0.4; } }
+
         .bingo-btn { background:#ff8c00; color:white; border:none; width: 100%; padding:15px; border-radius:15px; font-weight:bold; font-size:26px; box-shadow: 0 6px 0 #cc6600; cursor: pointer; margin-top: 10px; }
 
         #win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
@@ -139,9 +144,9 @@
     <div id="win-overlay" class="hidden">
         <h1 id="win-status" style="font-size: 50px; color: #f1c40f; margin: 0;">YOU WIN! 🎉</h1>
         <div id="winner-display" style="transform: scale(0.65); background: white; padding: 10px; border-radius: 15px; margin: 5px 0;"></div>
-        <p id="winner-info" style="font-size: 24px; font-weight: bold;"></p>
+        <p id="winner-info" style="font-size: 20px; font-weight: bold;"></p>
         <div id="wallet-update-msg" style="color: #2ecc71; font-weight: bold; margin-bottom: 10px; font-size: 22px;"></div>
-        <p style="color: #ccc;">በ 5 ሰከንድ ውስጥ ይመለሳል...</p>
+        <p style="color: #ccc;">በ 8 ሰከንድ ውስጥ ይመለሳል...</p>
     </div>
 
     <script>
@@ -271,52 +276,57 @@
             const cells = Array.from(document.querySelectorAll('#game-card-body .card-cell'));
             const lastBall = calledNums[calledNums.length - 1];
             
-            // የድል መንገዶች (Patterns)
             const patterns = [
-                [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24], // Horizontal
-                [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24], // Vertical
-                [0,6,12,18,24],[4,8,12,16,20], // Diagonal
-                [0,4,20,24] // 4 Corners
+                [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
+                [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
+                [0,6,12,18,24],[4,8,12,16,20],
+                [0,4,20,24]
             ];
 
-            let win = false;
+            let winningPattern = null;
 
             for (let p of patterns) {
-                // በፓተርኑ ውስጥ ያሉት ሁሉም ቁጥሮች የወጡ (called) መሆናቸውን እና ቼክ የተደረጉ መሆናቸውን ማረጋገጥ
                 let patternMatches = p.every(idx => {
                     let val = parseInt(cells[idx].getAttribute('data-val'));
                     let isMarked = cells[idx].classList.contains('cell-active');
-                    // FREE cell (0) ሁሌም እንደወጣ ይቆጠራል፣ ሌሎች ግን በ calledNums ውስጥ መኖር አለባቸው
                     return isMarked && (val === 0 || calledNums.includes(val));
                 });
 
                 if (patternMatches) {
                     let patternValues = p.map(idx => parseInt(cells[idx].getAttribute('data-val')));
-                    // የመጨረሻው ቁጥር በፓተርኑ ውስጥ መኖሩን ማረጋገጥ (ለአሸናፊነት የግድ ነው)
                     if (patternValues.includes(lastBall) || (p.includes(12) && lastBall !== undefined)) {
-                        win = true;
+                        winningPattern = p;
                         break;
                     }
                 }
             }
 
-            // ተጫዋቹ ሁሉንም ቁጥሮች ቢነካ እንኳ ከላይ ያሉት 4 መንገዶች ካልተሟሉ አያሸንፍም
-            if (win) {
-                clearInterval(callInterval); 
-                document.getElementById('wallet-update-msg').innerText = "እንኳን ደስ አለህ! የጨዋታው ደርሻ " + derashAmount + " ብር አሸንፈሃል!";
-                
-                let currentMem = parseInt(localStorage.getItem('bingoWallet'));
-                localStorage.setItem('bingoWallet', currentMem + derashAmount);
-                
-                document.getElementById('win-overlay').classList.remove('hidden');
-                document.getElementById('winner-display').innerHTML = '<div class="card-header-info">CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
-                document.getElementById('winner-info').innerText = "አሸናፊ፡ ጆ | ካርቴላ #" + selectedID;
+                    if (winningPattern) {
+            clearInterval(callInterval); 
+            
+            // Wallet update
+            document.getElementById('wallet-update-msg').innerText = "እንኳን ደስ አለህ! የጨዋታው ደርሻ " + derashAmount + " ብር አሸንፈሃል!";
+            let currentMem = parseInt(localStorage.getItem('bingoWallet'));
+            localStorage.setItem('bingoWallet', currentMem + derashAmount);
+            
+            // አሸናፊውን ካርቴላ ማሳየት
+            const winnerBox = document.getElementById('winner-display');
+            winnerBox.innerHTML = '<div class="card-header-info">WINNING CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
+            
+            // አሸናፊ መስመሮችን እና የመጨረሻውን ቁጥር ምልክት ማድረግ
+            const winCells = winnerBox.querySelectorAll('.card-cell');
+            winningPattern.forEach(idx => {
+                winCells[idx].classList.add('win-line-cell');
+                let val = parseInt(winCells[idx].getAttribute('data-val'));
+                if(val === lastBall) winCells[idx].classList.add('last-ball-flash');
+            });
 
-                setTimeout(() => { location.reload(); }, 5000);
-            } else { 
-                alert("የድል መንገዶችን አላሟላህም ወይም የመጨረሻው ቁጥር አልወጣም!!"); 
-            }
+            // የአሸናፊ ስም እና መረጃ
+            document.getElementById('winner-info').innerHTML = "<span style='color:#f1c40f; font-size:24px;'>አሸናፊ፡ ዮሐንስ</span><br>የመጨረሻ ቁጥር፡ " + lastBall;
+            document.getElementById('win-overlay').classList.remove('hidden');
+
+            // ወደ 5 ሰከንድ ተመልሷል
+            setTimeout(() => { location.reload(); }, 5000); 
+        } else { 
+            alert("የድል መንገዶችን አላሟላህም ወይም የመጨረሻው ቁጥር አልወጣም!!"); 
         }
-    </script>
-</body>
-</html>
