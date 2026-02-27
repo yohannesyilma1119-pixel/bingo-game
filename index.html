@@ -194,7 +194,7 @@
             }
         }, 1000);
 
-        function startGame() {
+        unction startGame() {
             if(wallet < stake) {
                 alert("ለጨዋታ የሚሆን በቂ ብር የለዎትም!");
                 location.reload();
@@ -202,7 +202,9 @@
             }
 
             gameStarted = true;
-            wallet -= stake; // Deduct stake from wallet
+            wallet -= stake; // 50 የነበረው 40 ይሆናል
+            
+            // በሁለቱም ዳሽቦርድ ላይ Wallet update እንዲሆን
             document.getElementById('wallet-select').innerText = wallet;
             
             if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
@@ -229,6 +231,7 @@
                 }
             }, 4200);
         }
+
 
         function speak(L, n) {
             let am = L === 'B' ? 'ቢ' : L === 'I' ? 'አይ' : L === 'N' ? 'ኤን' : L === 'G' ? 'ጂ' : 'ኦ';
@@ -276,17 +279,29 @@
             }
 
             if (win) {
-                clearInterval(callInterval); // Stop calling numbers
-                wallet += derashAmount; // Add winnings to wallet
+                clearInterval(callInterval); // ጥሪው ይቆማል
                 
-                document.getElementById('win-overlay').classList.remove('hidden');
+                // Wallet Logic: 40 + 40 = 80 እንዲሆን
+                wallet += derashAmount; 
+                document.getElementById('wallet-select').innerText = wallet;
+
+                // Overlay ማሳየት
+                const overlay = document.getElementById('win-overlay');
+                const nextBtn = overlay.querySelector('button');
+                
+                overlay.classList.remove('hidden');
+                nextBtn.classList.add('hidden'); // መጀመሪያ በተኑን መደበቅ
+                
                 document.getElementById('winner-display').innerHTML = '<div class="card-header-info">CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
                 document.getElementById('winner-info').innerText = "አሸናፊ፡ ጆ | ካርቴላ #" + selectedID;
-                document.getElementById('wallet-update-msg').innerText = derashAmount + " ብር ወደ Wallet ገብቷል!";
+                document.getElementById('wallet-update-msg').innerText = derashAmount + " ብር ወደ Wallet ገብቷል! ጠቅላላ፡ " + wallet + " ብር";
+
+                // Return to select screen after 5 seconds
+                setTimeout(() => {
+                    nextBtn.classList.remove('hidden');
+                }, 5000);
+
             } else { 
                 alert("ቁጥሩ አልፏል ወይም ገና ነህ!!"); 
             }
         }
-    </script>
-</body>
-</html>
