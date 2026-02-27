@@ -39,7 +39,7 @@
         .sel-btn { background: #ff8c00; color: white; border: none; padding: 10px 0; border-radius: 8px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 0 #cc6600; cursor: pointer; }
         .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; transform: translateY(2px); }
         .preview-container { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 200px; }
-        #preview-box { width: 100%; display: center; justify-content: center; transform: scale(0.8); }
+        #preview-box { width: 100%; display: flex; justify-content: center; transform: scale(0.8); }
 
         .game-layout { 
             display: flex; width: 100%; max-width: 480px; 
@@ -100,7 +100,7 @@
         <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">5</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
-        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
+        <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val" id="wallet-game">40</div></div>
     </div>
 
     <div id="select-screen">
@@ -202,8 +202,11 @@
             }
 
             gameStarted = true;
-            wallet -= stake; // Deduct 10
+            wallet -= stake; // 50 የነበረው 40 ይሆናል
+            
+            // ዳሽቦርዶቹን ማዘመን
             document.getElementById('wallet-select').innerText = wallet;
+            document.getElementById('wallet-game').innerText = wallet;
             
             if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
             
@@ -254,7 +257,7 @@
             return h;
         }
 
-                function checkBingo() {
+        function checkBingo() {
             const cells = Array.from(document.querySelectorAll('#game-card-body .card-cell'));
             const marked = cells.map(td => td.classList.contains('cell-active'));
             const lastBall = calledNums[calledNums.length - 1];
@@ -278,18 +281,19 @@
             if (win) {
                 clearInterval(callInterval); 
                 
-                // Wallet Logic: 40 የነበረው ላይ 40 ተደምሮ 80 ይሆናል
+                // Wallet Logic: 40 + 40 = 80
                 wallet += derashAmount; 
                 
-                // ዳሽቦርዱ ላይ ወዲያውኑ እንዲታይ (ይህ መስመር ተጨምሯል)
+                // ዳሽቦርዶቹን ወዲያውኑ ማዘመን
                 document.getElementById('wallet-select').innerText = wallet;
+                document.getElementById('wallet-game').innerText = wallet;
                 
                 document.getElementById('win-overlay').classList.remove('hidden');
                 document.getElementById('winner-display').innerHTML = '<div class="card-header-info">CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
                 document.getElementById('winner-info').innerText = "አሸናፊ፡ ጆ | ካርቴላ #" + selectedID;
                 document.getElementById('wallet-update-msg').innerText = derashAmount + " ብር ወደ Wallet ገብቷል! ጠቅላላ፡ " + wallet + " ብር";
 
-                // ተጫዋቹ የድል ካርቴላውን እንዲያይ ለ5 ሰከንድ ቆይቶ Reload ያደርጋል
+                // Return after 5 seconds
                 setTimeout(() => {
                     location.reload(); 
                 }, 5000);
@@ -297,3 +301,6 @@
                 alert("ቁጥሩ አልፏል ወይም ገና ነህ!!"); 
             }
         }
+    </script>
+</body>
+</html>
