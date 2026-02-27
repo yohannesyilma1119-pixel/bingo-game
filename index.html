@@ -100,7 +100,7 @@
         <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">5</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
-        <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val" id="wallet-game">40</div></div>
+        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
     </div>
 
     <div id="select-screen">
@@ -140,12 +140,15 @@
         <h1 id="win-status" style="font-size: 50px; color: #f1c40f; margin: 0;">YOU WIN! 🎉</h1>
         <div id="winner-display" style="transform: scale(0.65); background: white; padding: 10px; border-radius: 15px; margin: 5px 0;"></div>
         <p id="winner-info" style="font-size: 24px; font-weight: bold;"></p>
-        <div id="wallet-update-msg" style="color: #2ecc71; font-weight: bold; margin-bottom: 10px;"></div>
+        <div id="wallet-update-msg" style="color: #2ecc71; font-weight: bold; margin-bottom: 10px; font-size: 22px;"></div>
         <p style="color: #ccc;">በ 5 ሰከንድ ውስጥ ይመለሳል...</p>
     </div>
 
     <script>
-        let wallet = 50;
+        // ሂሳቡን ከስልኩ ሜሞሪ መጫን (ካልተገኘ 50)
+        let wallet = parseInt(localStorage.getItem('bingoWallet')) || 50;
+        document.getElementById('wallet-select').innerText = wallet;
+
         let selectedID = null;
         let gameStarted = false;
         let calledNums = [];
@@ -203,10 +206,8 @@
 
             gameStarted = true;
             wallet -= stake; // 50 የነበረው 40 ይሆናል
-            
-            // ዳሽቦርዶቹን ማዘመን
+            localStorage.setItem('bingoWallet', wallet); // ሜሞሪ ላይ ማስቀመጥ
             document.getElementById('wallet-select').innerText = wallet;
-            document.getElementById('wallet-game').innerText = wallet;
             
             if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
             
@@ -281,19 +282,18 @@
             if (win) {
                 clearInterval(callInterval); 
                 
-                // Wallet Logic: 40 + 40 = 80
-                wallet += derashAmount; 
+                // 1. የደርሻውን ብር ብቻ ማሳየት
+                document.getElementById('wallet-update-msg').innerText = "እንኳን ደስ አለህ! የጨዋታው ደርሻ " + derashAmount + " ብር አሸንፈሃል!";
                 
-                // ዳሽቦርዶቹን ወዲያውኑ ማዘመን
-                document.getElementById('wallet-select').innerText = wallet;
-                document.getElementById('wallet-game').innerText = wallet;
+                // 2. Wallet Logic: አሁን ካለው 40 ላይ 40 ተደምሮ 80 ይሆናል
+                wallet += derashAmount; 
+                localStorage.setItem('bingoWallet', wallet); // ሜሞሪ ላይ 80 ሆኖ ይቀመጣል
                 
                 document.getElementById('win-overlay').classList.remove('hidden');
                 document.getElementById('winner-display').innerHTML = '<div class="card-header-info">CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
                 document.getElementById('winner-info').innerText = "አሸናፊ፡ ጆ | ካርቴላ #" + selectedID;
-                document.getElementById('wallet-update-msg').innerText = derashAmount + " ብር ወደ Wallet ገብቷል! ጠቅላላ፡ " + wallet + " ብር";
 
-                // Return after 5 seconds
+                // 3. ከ 5 ሰከንድ በኋላ ገጹ ሲታደስ Wallet 80 ሆኖ ይመጣል
                 setTimeout(() => {
                     location.reload(); 
                 }, 5000);
