@@ -269,32 +269,38 @@
 
         function checkBingo() {
             const cells = Array.from(document.querySelectorAll('#game-card-body .card-cell'));
-            const marked = cells.map(td => td.classList.contains('cell-active'));
             const lastBall = calledNums[calledNums.length - 1];
             
-            // "Full House" ተወግዶ 4ቱ ዋና ዋና መንገዶች ብቻ ተቀምጠዋል
+            // የድል መንገዶች (Patterns)
             const patterns = [
-                // 1. Horizontal (ወደ ጎን)
-                [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
-                // 2. Vertical (ወደ ታች)
-                [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
-                // 3. Diagonal (ዲያጎናል)
-                [0,6,12,18,24],[4,8,12,16,20],
-                // 4. 4 Corners (አራቱ ማዕዘን)
-                [0,4,20,24]
+                [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24], // Horizontal
+                [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24], // Vertical
+                [0,6,12,18,24],[4,8,12,16,20], // Diagonal
+                [0,4,20,24] // 4 Corners
             ];
 
             let win = false;
+
             for (let p of patterns) {
-                if (p.every(idx => marked[idx])) {
+                // በፓተርኑ ውስጥ ያሉት ሁሉም ቁጥሮች የወጡ (called) መሆናቸውን እና ቼክ የተደረጉ መሆናቸውን ማረጋገጥ
+                let patternMatches = p.every(idx => {
+                    let val = parseInt(cells[idx].getAttribute('data-val'));
+                    let isMarked = cells[idx].classList.contains('cell-active');
+                    // FREE cell (0) ሁሌም እንደወጣ ይቆጠራል፣ ሌሎች ግን በ calledNums ውስጥ መኖር አለባቸው
+                    return isMarked && (val === 0 || calledNums.includes(val));
+                });
+
+                if (patternMatches) {
                     let patternValues = p.map(idx => parseInt(cells[idx].getAttribute('data-val')));
-                    // አሸናፊ ለመሆን በመጨረሻ የወጣው ቁጥር በፓተርኑ ውስጥ መኖር አለበት
+                    // የመጨረሻው ቁጥር በፓተርኑ ውስጥ መኖሩን ማረጋገጥ (ለአሸናፊነት የግድ ነው)
                     if (patternValues.includes(lastBall) || (p.includes(12) && lastBall !== undefined)) {
-                         win = true; break;
+                        win = true;
+                        break;
                     }
                 }
             }
 
+            // ተጫዋቹ ሁሉንም ቁጥሮች ቢነካ እንኳ ከላይ ያሉት 4 መንገዶች ካልተሟሉ አያሸንፍም
             if (win) {
                 clearInterval(callInterval); 
                 document.getElementById('wallet-update-msg').innerText = "እንኳን ደስ አለህ! የጨዋታው ደርሻ " + derashAmount + " ብር አሸንፈሃል!";
@@ -308,7 +314,7 @@
 
                 setTimeout(() => { location.reload(); }, 5000);
             } else { 
-                alert("ቁጥሩ አልፏል ወይም ገና ነህ!!"); 
+                alert("የድል መንገዶችን አላሟላህም ወይም የመጨረሻው ቁጥር አልወጣም!!"); 
             }
         }
     </script>
