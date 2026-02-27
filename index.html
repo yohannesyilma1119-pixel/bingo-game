@@ -19,12 +19,10 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* Dashboard */
         .dashboard {
             display: grid; grid-template-columns: repeat(4, 1fr);
             width: 100%; max-width: 600px; gap: 4px; margin-bottom: 5px;
         }
-        /* Dashboard Game Mode has 5 columns */
         .dashboard.game-mode { grid-template-columns: repeat(5, 1fr); }
 
         .stat-item {
@@ -35,7 +33,6 @@
         .stat-label { font-size: 8px; color: #8e44ad; font-weight: bold; display: block; }
         .stat-val { font-size: 12px; font-weight: bold; }
 
-        /* --- SELECTION SCREEN --- */
         #select-screen { width: 100%; max-width: 500px; display: flex; flex-direction: column; height: 90vh; }
         .scroll-container { background: rgba(255, 255, 255, 0.6); border-radius: 15px; padding: 12px; flex: 1; overflow-y: auto; border: 2px solid white; margin-bottom: 10px; }
         .selection-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
@@ -44,7 +41,6 @@
         .preview-container { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 200px; }
         #preview-box { width: 100%; display: flex; justify-content: center; transform: scale(0.8); }
 
-        /* --- GAME MODE --- */
         .game-layout { 
             display: flex; width: 100%; max-width: 480px; 
             gap: 12px; padding: 10px; margin-top: 10px;
@@ -94,14 +90,14 @@
 
     <div id="dash-select" class="dashboard">
         <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">25</div></div>
-        <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val">500</div></div>
+        <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val" id="wallet-select">50</div></div>
         <div class="stat-item"><span class="stat-label">STAKE</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
     </div>
 
     <div id="dash-game" class="dashboard game-mode hidden">
-        <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val">2500</div></div>
-        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">312</div></div>
+        <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="derash-val">40</div></div>
+        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">5</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
@@ -141,17 +137,24 @@
     </div>
 
     <div id="win-overlay" class="hidden">
-        <h1 style="font-size: 50px; color: #f1c40f; margin: 0;">YOU WIN! 🎉</h1>
+        <h1 id="win-status" style="font-size: 50px; color: #f1c40f; margin: 0;">YOU WIN! 🎉</h1>
         <div id="winner-display" style="transform: scale(0.65); background: white; padding: 10px; border-radius: 15px; margin: 5px 0;"></div>
         <p id="winner-info" style="font-size: 24px; font-weight: bold;"></p>
+        <div id="wallet-update-msg" style="color: #2ecc71; font-weight: bold; margin-bottom: 10px;"></div>
         <button onclick="location.reload()" style="padding: 15px 40px; background: #ff8c00; color: white; border: none; border-radius: 10px; font-weight: bold;">ቀጣይ ጨዋታ</button>
     </div>
 
     <script>
+        let wallet = 50;
         let selectedID = null;
         let gameStarted = false;
         let calledNums = [];
         let voiceReady = false;
+        let callInterval = null;
+        const stake = 10;
+        const playersCount = 5;
+        const commissionPerPlayer = 2;
+        const derashAmount = (stake * playersCount) - (commissionPerPlayer * playersCount);
 
         function initAudio() { voiceReady = true; }
 
@@ -192,19 +195,28 @@
         }, 1000);
 
         function startGame() {
+            if(wallet < stake) {
+                alert("ለጨዋታ የሚሆን በቂ ብር የለዎትም!");
+                location.reload();
+                return;
+            }
+
             gameStarted = true;
+            wallet -= stake; // Deduct stake from wallet
+            document.getElementById('wallet-select').innerText = wallet;
+            
             if(!selectedID) selectedID = Math.floor(Math.random()*200)+1;
             
-            // Switch Dashboards
             document.getElementById('dash-select').classList.add('hidden');
             document.getElementById('dash-game').classList.remove('hidden');
+            document.getElementById('derash-val').innerText = derashAmount;
             
             document.getElementById('select-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
             document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
             
-            setInterval(() => {
+            callInterval = setInterval(() => {
                 if(calledNums.length < 75) {
                     let ball;
                     do { ball = Math.floor(Math.random()*75)+1; } while(calledNums.includes(ball));
@@ -264,9 +276,13 @@
             }
 
             if (win) {
+                clearInterval(callInterval); // Stop calling numbers
+                wallet += derashAmount; // Add winnings to wallet
+                
                 document.getElementById('win-overlay').classList.remove('hidden');
                 document.getElementById('winner-display').innerHTML = '<div class="card-header-info">CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
                 document.getElementById('winner-info').innerText = "አሸናፊ፡ ጆ | ካርቴላ #" + selectedID;
+                document.getElementById('wallet-update-msg').innerText = derashAmount + " ብር ወደ Wallet ገብቷል!";
             } else { 
                 alert("ቁጥሩ አልፏል ወይም ገና ነህ!!"); 
             }
