@@ -25,9 +25,11 @@
             .preview-container { min-height: 150px; }
         }
 
+        /* Wait Banner Style */
         #wait-banner {
             background: #e74c3c; color: white; width: 100%; text-align: center;
-            padding: 8px 0; font-weight: bold; position: fixed; top: 0; z-index: 4000;
+            padding: 10px 0; font-weight: bold; position: fixed; top: 0; left: 0; z-index: 4000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .dashboard {
@@ -277,10 +279,15 @@
 
             if(!selectedID) {
                 isSpectator = true;
+                // Spectator banner visible
                 document.getElementById('wait-banner').classList.remove('hidden');
                 document.getElementById('card-id-label').innerText = "SPECTATOR MODE";
-                document.getElementById('bingo-btn').disabled = true;
-                document.getElementById('bingo-btn').style.opacity = "0.5";
+                // Disable BINGO button for spectator
+                const bingoBtn = document.getElementById('bingo-btn');
+                bingoBtn.disabled = true;
+                bingoBtn.style.opacity = "0.4";
+                bingoBtn.style.cursor = "not-allowed";
+                bingoBtn.innerText = "WAITING...";
             } else {
                 document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
                 document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
