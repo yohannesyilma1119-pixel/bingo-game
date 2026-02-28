@@ -19,11 +19,16 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* ስልኩ ሲዞር (Rotation Fix) */
         @media screen and (orientation: landscape) {
             body { overflow-y: auto; height: auto; }
             .game-layout { flex-direction: row; align-items: flex-start; }
             .preview-container { min-height: 150px; }
+        }
+
+        /* Wait Banner Style */
+        #wait-banner {
+            background: #e74c3c; color: white; width: 100%; text-align: center;
+            padding: 8px 0; font-weight: bold; position: fixed; top: 0; z-index: 4000;
         }
 
         .dashboard {
@@ -96,7 +101,6 @@
 
         #win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
         
-        /* Registration Modal */
         #reg-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel-purple); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .reg-input { padding: 15px; border-radius: 10px; border: none; width: 80%; max-width: 300px; font-size: 18px; margin-bottom: 20px; text-align: center; }
         
@@ -105,7 +109,9 @@
 </head>
 <body onclick="initAudio()">
 
-    <div id="reg-modal">
+    <div id="wait-banner" class="hidden">Wait for the Next Game...</div>
+
+    <div id="reg-modal" class="hidden">
         <h2 style="color: white; margin-bottom: 10px;">BINGO HUB</h2>
         <p style="color: #e0cfe0; margin-bottom: 20px;">እባክዎ ስምዎን ያስገቡ</p>
         <input type="text" id="player-name-input" class="reg-input" placeholder="ስም እዚህ ይጻፉ..." maxlength="12">
@@ -115,13 +121,13 @@
     <div id="dash-select" class="dashboard hidden">
         <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">25</div></div>
         <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val" id="wallet-select">50</div></div>
-        <div class="stat-item"><span class="stat-label">STAKE</span><div class="stat-val">10</div></div>
+        <div class="stat-item"><span class="stat-label">NAME</span><div class="stat-val" id="dash-name-select">---</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
     </div>
 
     <div id="dash-game" class="dashboard game-mode hidden">
         <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="derash-val">40</div></div>
-        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">5</div></div>
+        <div class="stat-item"><span class="stat-label">NAME</span><div class="stat-val" id="dash-name-game">---</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
@@ -137,7 +143,7 @@
 
     <div id="game-screen" class="hidden">
         <div class="game-layout">
-            <div class="left-board">
+            <div class="left-board" id="board-numbers-container">
                 <div class="board-header">B</div><div class="board-header">I</div><div class="board-header">N</div><div class="board-header">G</div><div class="board-header">O</div>
                 <div id="board-numbers" style="display: contents;"></div>
             </div>
@@ -154,7 +160,7 @@
                         <tr class="b-header"><td>B</td><td>I</td><td>N</td><td>G</td><td>O</td></tr>
                         <tbody id="game-card-body"></tbody>
                     </table>
-                    <button class="bingo-btn" onclick="checkBingo()">BINGO!</button>
+                    <button id="bingo-btn" class="bingo-btn" onclick="checkBingo()">BINGO!</button>
                 </div>
             </div>
         </div>
@@ -173,6 +179,7 @@
         let playerName = localStorage.getItem('bingoPlayerName') || "";
         let selectedID = null;
         let gameStarted = false;
+        let isSpectator = false;
         let hasPaid = false; 
         let calledNums = [];
         let voiceReady = false;
@@ -184,15 +191,12 @@
 
         function initAudio() { voiceReady = true; }
 
-        // Registration Logic
         window.onload = () => {
-            if(playerName) {
-                document.getElementById('reg-modal').classList.add('hidden');
-                document.getElementById('dash-select').classList.remove('hidden');
-                document.getElementById('select-screen').classList.remove('hidden');
-                startTimer();
+            if(!playerName) {
+                document.getElementById('reg-modal').classList.remove('hidden');
+            } else {
+                setupUI();
             }
-            document.getElementById('wallet-select').innerText = wallet;
         };
 
         function registerPlayer() {
@@ -201,40 +205,54 @@
             playerName = name;
             localStorage.setItem('bingoPlayerName', playerName);
             document.getElementById('reg-modal').classList.add('hidden');
+            setupUI();
+        }
+
+        function setupUI() {
+            document.getElementById('dash-name-select').innerText = playerName;
+            document.getElementById('dash-name-game').innerText = playerName;
+            document.getElementById('wallet-select').innerText = wallet;
             document.getElementById('dash-select').classList.remove('hidden');
             document.getElementById('select-screen').classList.remove('hidden');
+            initBoard();
+            initSelectionGrid();
             startTimer();
         }
 
-        const grid = document.getElementById('grid');
-        for(let i=1; i<=200; i++) {
-            let b = document.createElement('button');
-            b.className = 'sel-btn';
-            b.innerText = i;
-            b.onclick = () => {
-                if(selectedID) document.querySelector('.sel-btn.active')?.classList.remove('active');
-                if (!hasPaid) {
-                    if (wallet >= stake) {
-                        wallet -= stake;
-                        hasPaid = true;
-                        document.getElementById('wallet-select').innerText = wallet;
-                        localStorage.setItem('bingoWallet', wallet);
-                    } else { alert("በቂ ብር የሎትም!"); return; }
+        function initBoard() {
+            const boardContainer = document.getElementById('board-numbers');
+            boardContainer.innerHTML = '';
+            for(let row=0; row<15; row++) {
+                for(let col=0; col<5; col++) {
+                    let val = (col * 15) + row + 1;
+                    let d = document.createElement('div');
+                    d.className = 'board-num'; d.id = 'slot-' + val; d.innerText = val;
+                    boardContainer.appendChild(d);
                 }
-                selectedID = i;
-                b.classList.add('active');
-                document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:9px;">' + genCardHTML(i, false) + '</table>';
-            };
-            grid.appendChild(b);
+            }
         }
 
-        const boardContainer = document.getElementById('board-numbers');
-        for(let row=0; row<15; row++) {
-            for(let col=0; col<5; col++) {
-                let val = (col * 15) + row + 1;
-                let d = document.createElement('div');
-                d.className = 'board-num'; d.id = 'slot-' + val; d.innerText = val;
-                boardContainer.appendChild(d);
+        function initSelectionGrid() {
+            const grid = document.getElementById('grid');
+            for(let i=1; i<=200; i++) {
+                let b = document.createElement('button');
+                b.className = 'sel-btn';
+                b.innerText = i;
+                b.onclick = () => {
+                    if(selectedID) document.querySelector('.sel-btn.active')?.classList.remove('active');
+                    if (!hasPaid) {
+                        if (wallet >= stake) {
+                            wallet -= stake;
+                            hasPaid = true;
+                            document.getElementById('wallet-select').innerText = wallet;
+                            localStorage.setItem('bingoWallet', wallet);
+                        } else { alert("በቂ ብር የሎትም!"); return; }
+                    }
+                    selectedID = i;
+                    b.classList.add('active');
+                    document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:9px;">' + genCardHTML(i, false) + '</table>';
+                };
+                grid.appendChild(b);
             }
         }
 
@@ -253,18 +271,23 @@
         }
 
         function startGame() {
-            if(!selectedID) {
-                if (wallet >= stake) { wallet -= stake; localStorage.setItem('bingoWallet', wallet); }
-                selectedID = Math.floor(Math.random()*200)+1;
-            }
             gameStarted = true;
             document.getElementById('dash-select').classList.add('hidden');
             document.getElementById('dash-game').classList.remove('hidden');
             document.getElementById('derash-val').innerText = derashAmount;
             document.getElementById('select-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
-            document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
+
+            if(!selectedID) {
+                isSpectator = true;
+                document.getElementById('wait-banner').classList.remove('hidden');
+                document.getElementById('card-id-label').innerText = "SPECTATOR MODE";
+                document.getElementById('bingo-btn').disabled = true;
+                document.getElementById('bingo-btn').style.opacity = "0.5";
+            } else {
+                document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
+                document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
+            }
             
             callInterval = setInterval(() => {
                 if(calledNums.length < 75) {
@@ -305,6 +328,7 @@
         }
 
         function checkBingo() {
+            if(isSpectator) return;
             const cells = Array.from(document.querySelectorAll('#game-card-body .card-cell'));
             const lastBall = calledNums[calledNums.length - 1];
             const patterns = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20],[0,4,20,24]];
@@ -338,7 +362,7 @@
                 document.getElementById('winner-info').innerHTML = `<span style='color:#f1c40f;'>አሸናፊ፡ ${playerName}</span><br>ካርቴላ፡ #${selectedID} | ቁጥር፡ ${lastBall}`;
                 document.getElementById('win-overlay').classList.remove('hidden');
                 setTimeout(() => { location.reload(); }, 5000);
-            } else { alert("የድል መንገዶችን አላሟላህም ወይም የመጨረሻው ቁጥር አልወጣም!!"); }
+            } else { alert("የድል መንገዶችን አላሟላህም ወይም የመጨረሻው ቁጥር አልወጣ!!"); }
         }
     </script>
 </body>
