@@ -25,7 +25,6 @@
             .preview-container { min-height: 150px; }
         }
 
-        /* Wait Banner Style */
         #wait-banner {
             background: #e74c3c; color: white; width: 100%; text-align: center;
             padding: 8px 0; font-weight: bold; position: fixed; top: 0; z-index: 4000;
@@ -121,13 +120,13 @@
     <div id="dash-select" class="dashboard hidden">
         <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">25</div></div>
         <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val" id="wallet-select">50</div></div>
-        <div class="stat-item"><span class="stat-label">NAME</span><div class="stat-val" id="dash-name-select">---</div></div>
+        <div class="stat-item"><span class="stat-label">STAKE</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
     </div>
 
     <div id="dash-game" class="dashboard game-mode hidden">
         <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="derash-val">40</div></div>
-        <div class="stat-item"><span class="stat-label">NAME</span><div class="stat-val" id="dash-name-game">---</div></div>
+        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">5</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
@@ -209,8 +208,6 @@
         }
 
         function setupUI() {
-            document.getElementById('dash-name-select').innerText = playerName;
-            document.getElementById('dash-name-game').innerText = playerName;
             document.getElementById('wallet-select').innerText = wallet;
             document.getElementById('dash-select').classList.remove('hidden');
             document.getElementById('select-screen').classList.remove('hidden');
