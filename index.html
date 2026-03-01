@@ -52,7 +52,7 @@
         .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; transform: translateY(2px); }
         
         .preview-container { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 200px; }
-        #preview-box { width: 100%; display: center; justify-content: center; transform: scale(0.8); }
+        #preview-box { width: 100%; display: flex; justify-content: center; transform: scale(0.8); }
 
         .game-layout { 
             display: flex; width: 100%; max-width: 480px; 
@@ -104,7 +104,6 @@
         #reg-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel-purple); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .reg-input { padding: 15px; border-radius: 10px; border: none; width: 80%; max-width: 300px; font-size: 18px; margin-bottom: 20px; text-align: center; }
         
-        /* Waiting Room Style */
         #waiting-room { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel-purple); z-index: 2500; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white; }
 
         .hidden { display: none !important; }
@@ -123,20 +122,20 @@
 
     <div id="waiting-room" class="hidden">
         <h2 style="font-size: 28px;">እንኳን ደህና መጡ!</h2>
-        <p style="padding: 0 20px;">ጨዋታው ገና አልተጀመረም። ለመጀመር "START" የሚለውን ይጫኑ ወይም ሌሎች እስኪጀምሩ ይጠብቁ።</p>
+        <p style="padding: 0 20px;">ጨዋታው እንዲጀመር ቢያንስ 3 ተጫዋቾች ያስፈልጋሉ።</p>
         <button class="bingo-btn" style="width: 80%; max-width: 300px;" onclick="triggerStart()">START / ጀምር</button>
     </div>
 
     <div id="dash-select" class="dashboard hidden">
-        <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">00</div></div>
+        <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">25</div></div>
         <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val" id="wallet-select">50</div></div>
         <div class="stat-item"><span class="stat-label">STAKE</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val" id="game-id-select">882</div></div>
     </div>
 
     <div id="dash-game" class="dashboard game-mode hidden">
-        <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="derash-val">40</div></div>
-        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">5</div></div>
+        <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="derash-val">24</div></div>
+        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">3</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val" id="game-id-active">882</div></div>
@@ -184,9 +183,8 @@
     </div>
 
     <script>
-        // CONFIG
-        const GAME_INTERVAL_SEC = 300; // Total cycle (5 mins)
-        const SELECTION_PHASE_SEC = 25; // selection time (25 sec)
+        const GAME_INTERVAL_SEC = 300;
+        const SELECTION_PHASE_SEC = 25;
 
         let wallet = parseInt(localStorage.getItem('bingoWallet')) || 50;
         let playerName = localStorage.getItem('bingoPlayerName') || "";
@@ -197,10 +195,13 @@
         let calledNums = [];
         let voiceReady = false;
         let callInterval = null;
+        let timerTriggered = false;
+
         const stake = 10;
-        const playersCount = 5;
+        const testersCount = 2; // 2 testers + You = 3 players total
+        const totalPlayers = testersCount + 1;
         const commissionPerPlayer = 2;
-        const derashAmount = (stake * playersCount) - (commissionPerPlayer * playersCount);
+        const derashAmount = (stake * totalPlayers) - (commissionPerPlayer * totalPlayers);
 
         function initAudio() { voiceReady = true; }
 
@@ -223,45 +224,38 @@
 
         function setupUI() {
             document.getElementById('wallet-select').innerText = wallet;
+            document.getElementById('waiting-room').classList.remove('hidden');
             initBoard();
             initSelectionGrid();
+        }
+
+        function triggerStart() {
+            timerTriggered = true;
+            document.getElementById('waiting-room').classList.add('hidden');
+            document.getElementById('dash-select').classList.remove('hidden');
+            document.getElementById('select-screen').classList.remove('hidden');
             syncGameLoop();
         }
 
-        // Simulate a "Server Start" using time segments
-        function triggerStart() {
-            // In a real server app, this would tell the server to start.
-            // Here, we just refresh and let the time sync take over.
-            document.getElementById('waiting-room').classList.add('hidden');
-        }
-
         function syncGameLoop() {
-            setInterval(() => {
+            const startTime = Math.floor(Date.now() / 1000);
+            
+            const timerInterval = setInterval(() => {
                 const now = Math.floor(Date.now() / 1000);
-                const cyclePos = now % GAME_INTERVAL_SEC;
-                const gameID = Math.floor(now / GAME_INTERVAL_SEC);
-                
-                document.getElementById('game-id-select').innerText = gameID;
-                document.getElementById('game-id-active').innerText = gameID;
+                const elapsed = now - startTime;
+                const timeLeft = SELECTION_PHASE_SEC - elapsed;
 
-                // Simple Logic: If someone enters at the very start of a cycle
-                if (cyclePos < SELECTION_PHASE_SEC) {
-                    document.getElementById('waiting-room').classList.add('hidden');
-                    if (gameStarted) location.reload(); 
-                    document.getElementById('dash-select').classList.remove('hidden');
-                    document.getElementById('select-screen').classList.remove('hidden');
-                    document.getElementById('game-screen').classList.add('hidden');
-                    document.getElementById('timer-val').innerText = SELECTION_PHASE_SEC - cyclePos;
-                } else if (cyclePos >= SELECTION_PHASE_SEC && cyclePos < (GAME_INTERVAL_SEC - 10)) {
-                    // GAME IS LIVE
-                    document.getElementById('waiting-room').classList.add('hidden');
-                    if (!gameStarted) startGame(cyclePos - SELECTION_PHASE_SEC);
+                if (timeLeft >= 0) {
+                    document.getElementById('timer-val').innerText = timeLeft;
                 } else {
-                    // End of game buffer - show waiting room for next cycle
-                    if(!gameStarted) {
-                        document.getElementById('waiting-room').classList.remove('hidden');
-                        document.getElementById('dash-select').classList.add('hidden');
-                        document.getElementById('select-screen').classList.add('hidden');
+                    // 25 seconds finished
+                    if (selectedID) {
+                        // Success: Player selected a card
+                        clearInterval(timerInterval);
+                        startGame(0);
+                    } else {
+                        // Fail: No card selected, reset timer
+                        location.reload(); 
                     }
                 }
             }, 1000);
@@ -312,36 +306,20 @@
             document.getElementById('select-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
 
-            if(!selectedID) {
-                isSpectator = true;
-                document.getElementById('wait-banner').classList.remove('hidden');
-                document.getElementById('card-id-label').innerText = "SPECTATOR MODE";
-                const btn = document.getElementById('bingo-btn');
-                btn.disabled = true; btn.style.opacity = "0.4"; btn.innerText = "WAITING...";
-            } else {
-                document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
-                document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
-            }
+            document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
+            document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
             
             const callSpeed = 4200;
-            const ballsToCatchUp = Math.floor((elapsedInGame * 1000) / callSpeed);
-            
-            let seed = Math.floor(Math.floor(Date.now() / 1000) / GAME_INTERVAL_SEC);
             let gameBalls = [];
             for(let i=1; i<=75; i++) gameBalls.push(i);
+            
+            // Shuffle
             for (let i = gameBalls.length - 1; i > 0; i--) {
-                seed = (seed * 9301 + 49297) % 233280;
-                let j = Math.floor((seed / 233280) * (i + 1));
+                const j = Math.floor(Math.random() * (i + 1));
                 [gameBalls[i], gameBalls[j]] = [gameBalls[j], gameBalls[i]];
             }
 
-            for(let i=0; i < ballsToCatchUp && i < 75; i++) {
-                const b = gameBalls[i];
-                calledNums.push(b);
-                document.getElementById('slot-'+b).classList.add('num-called');
-            }
-
-            let currentIdx = ballsToCatchUp;
+            let currentIdx = 0;
             callInterval = setInterval(() => {
                 if(currentIdx < 75) {
                     const ball = gameBalls[currentIdx];
@@ -381,7 +359,6 @@
         }
 
         function checkBingo() {
-            if(isSpectator) return;
             const cells = Array.from(document.querySelectorAll('#game-card-body .card-cell'));
             const lastBall = calledNums[calledNums.length - 1];
             const patterns = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20],[0,4,20,24]];
