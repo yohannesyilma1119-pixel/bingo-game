@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BINGO HUB - Professional</title>
+    <title>BINGO HUB - Professional Sync</title>
     <style>
         :root { 
             --primary-bg: #d1b3ff; 
@@ -25,7 +25,6 @@
             .preview-container { min-height: 150px; }
         }
 
-        /* Wait Banner Style */
         #wait-banner {
             background: #e74c3c; color: white; width: 100%; text-align: center;
             padding: 10px 0; font-weight: bold; position: fixed; top: 0; left: 0; z-index: 4000;
@@ -120,10 +119,10 @@
     </div>
 
     <div id="dash-select" class="dashboard hidden">
-        <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">25</div></div>
+        <div class="stat-item"><span class="stat-label">TIME</span><div class="stat-val" id="timer-val">00</div></div>
         <div class="stat-item"><span class="stat-label">WALLET</span><div class="stat-val" id="wallet-select">50</div></div>
         <div class="stat-item"><span class="stat-label">STAKE</span><div class="stat-val">10</div></div>
-        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
+        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val" id="game-id-select">882</div></div>
     </div>
 
     <div id="dash-game" class="dashboard game-mode hidden">
@@ -131,7 +130,7 @@
         <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">5</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
-        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val">882</div></div>
+        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val" id="game-id-active">882</div></div>
     </div>
 
     <div id="select-screen" class="hidden">
@@ -176,6 +175,10 @@
     </div>
 
     <script>
+        // CONFIG
+        const GAME_INTERVAL_SEC = 300; // ጨዋታው በየ 5 ደቂቃው (300 ሰከንድ) ይጀምራል
+        const SELECTION_PHASE_SEC = 60; // 60 ሰከንድ ለምርጫ
+
         let wallet = parseInt(localStorage.getItem('bingoWallet')) || 50;
         let playerName = localStorage.getItem('bingoPlayerName') || "";
         let selectedID = null;
@@ -211,11 +214,32 @@
 
         function setupUI() {
             document.getElementById('wallet-select').innerText = wallet;
-            document.getElementById('dash-select').classList.remove('hidden');
-            document.getElementById('select-screen').classList.remove('hidden');
             initBoard();
             initSelectionGrid();
-            startTimer();
+            syncGameLoop();
+        }
+
+        function syncGameLoop() {
+            setInterval(() => {
+                const now = Math.floor(Date.now() / 1000);
+                const cyclePos = now % GAME_INTERVAL_SEC;
+                const gameID = Math.floor(now / GAME_INTERVAL_SEC);
+                
+                document.getElementById('game-id-select').innerText = gameID;
+                document.getElementById('game-id-active').innerText = gameID;
+
+                if (cyclePos < SELECTION_PHASE_SEC) {
+                    // SELECTION PHASE
+                    if (gameStarted) location.reload(); // ጨዋታው ካለቀ በኋላ reset ለማድረግ
+                    document.getElementById('dash-select').classList.remove('hidden');
+                    document.getElementById('select-screen').classList.remove('hidden');
+                    document.getElementById('game-screen').classList.add('hidden');
+                    document.getElementById('timer-val').innerText = SELECTION_PHASE_SEC - cyclePos;
+                } else {
+                    // GAME PHASE (LIVE)
+                    if (!gameStarted) startGame(cyclePos - SELECTION_PHASE_SEC);
+                }
+            }, 1000);
         }
 
         function initBoard() {
@@ -255,21 +279,7 @@
             }
         }
 
-        function startTimer() {
-            let timeLeft = 25;
-            const timerInt = setInterval(() => {
-                if(!gameStarted) {
-                    timeLeft--;
-                    document.getElementById('timer-val').innerText = timeLeft;
-                    if(timeLeft <= 0) {
-                        clearInterval(timerInt);
-                        startGame();
-                    }
-                }
-            }, 1000);
-        }
-
-        function startGame() {
+        function startGame(elapsedInGame) {
             gameStarted = true;
             document.getElementById('dash-select').classList.add('hidden');
             document.getElementById('dash-game').classList.remove('hidden');
@@ -279,32 +289,51 @@
 
             if(!selectedID) {
                 isSpectator = true;
-                // Spectator banner visible
                 document.getElementById('wait-banner').classList.remove('hidden');
                 document.getElementById('card-id-label').innerText = "SPECTATOR MODE";
-                // Disable BINGO button for spectator
-                const bingoBtn = document.getElementById('bingo-btn');
-                bingoBtn.disabled = true;
-                bingoBtn.style.opacity = "0.4";
-                bingoBtn.style.cursor = "not-allowed";
-                bingoBtn.innerText = "WAITING...";
+                const btn = document.getElementById('bingo-btn');
+                btn.disabled = true; btn.style.opacity = "0.4"; btn.innerText = "WAITING...";
             } else {
                 document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
                 document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
             }
             
+            // Sync Numbers based on time
+            const callSpeed = 4200;
+            const ballsToCatchUp = Math.floor((elapsedInGame * 1000) / callSpeed);
+            
+            // Generate deterministic numbers for the same Game ID
+            let seed = Math.floor(Math.floor(Date.now() / 1000) / GAME_INTERVAL_SEC);
+            let gameBalls = [];
+            for(let i=1; i<=75; i++) gameBalls.push(i);
+            // Deterministic shuffle
+            for (let i = gameBalls.length - 1; i > 0; i--) {
+                seed = (seed * 9301 + 49297) % 233280;
+                let j = Math.floor((seed / 233280) * (i + 1));
+                [gameBalls[i], gameBalls[j]] = [gameBalls[j], gameBalls[i]];
+            }
+
+            // Immediately show balls already called
+            for(let i=0; i < ballsToCatchUp && i < 75; i++) {
+                const b = gameBalls[i];
+                calledNums.push(b);
+                document.getElementById('slot-'+b).classList.add('num-called');
+            }
+
+            // Continue calling
+            let currentIdx = ballsToCatchUp;
             callInterval = setInterval(() => {
-                if(calledNums.length < 75) {
-                    let ball;
-                    do { ball = Math.floor(Math.random()*75)+1; } while(calledNums.includes(ball));
+                if(currentIdx < 75) {
+                    const ball = gameBalls[currentIdx];
                     calledNums.push(ball);
                     let L = ball <= 15 ? 'B' : ball <= 30 ? 'I' : ball <= 45 ? 'N' : ball <= 60 ? 'G' : 'O';
                     document.getElementById('ball-box').innerText = L + "-" + ball;
                     document.getElementById('slot-'+ball).classList.add('num-called');
                     document.getElementById('call-counter').innerText = calledNums.length;
                     if(voiceReady) speak(L, ball);
+                    currentIdx++;
                 }
-            }, 4200);
+            }, callSpeed);
         }
 
         function speak(L, n) {
