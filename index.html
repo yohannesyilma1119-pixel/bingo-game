@@ -122,7 +122,7 @@
 
     <div id="waiting-room" class="hidden">
         <h2 style="font-size: 28px;">እንኳን ደህና መጡ!</h2>
-        <p style="padding: 0 20px;">ጨዋታው እንዲጀመር ቢያንስ 3 ተጫዋቾች ያስፈልጋሉ።</p>
+        <p style="padding: 0 20px;">ጨዋታው ገና አልተጀመረም። ለመጀመር "START" የሚለውን ይጫኑ ወይም ሌሎች እስኪጀምሩ ይጠብቁ።</p>
         <button class="bingo-btn" style="width: 80%; max-width: 300px;" onclick="triggerStart()">START / ጀምር</button>
     </div>
 
@@ -183,8 +183,9 @@
     </div>
 
     <script>
-        const GAME_INTERVAL_SEC = 300;
-        const SELECTION_PHASE_SEC = 25;
+        // CONFIG
+        const GAME_INTERVAL_SEC = 300; 
+        const SELECTION_PHASE_SEC = 25; 
 
         let wallet = parseInt(localStorage.getItem('bingoWallet')) || 50;
         let playerName = localStorage.getItem('bingoPlayerName') || "";
@@ -195,13 +196,13 @@
         let calledNums = [];
         let voiceReady = false;
         let callInterval = null;
-        let timerTriggered = false;
+        let timerSeconds = SELECTION_PHASE_SEC;
+        let timerInterval = null;
 
         const stake = 10;
-        const testersCount = 2; // 2 testers + You = 3 players total
-        const totalPlayers = testersCount + 1;
+        const playersCount = 3; // 2 testers + 1 You
         const commissionPerPlayer = 2;
-        const derashAmount = (stake * totalPlayers) - (commissionPerPlayer * totalPlayers);
+        const derashAmount = (stake * playersCount) - (commissionPerPlayer * playersCount);
 
         function initAudio() { voiceReady = true; }
 
@@ -224,38 +225,37 @@
 
         function setupUI() {
             document.getElementById('wallet-select').innerText = wallet;
-            document.getElementById('waiting-room').classList.remove('hidden');
             initBoard();
             initSelectionGrid();
+            document.getElementById('waiting-room').classList.remove('hidden');
         }
 
         function triggerStart() {
-            timerTriggered = true;
             document.getElementById('waiting-room').classList.add('hidden');
             document.getElementById('dash-select').classList.remove('hidden');
             document.getElementById('select-screen').classList.remove('hidden');
-            syncGameLoop();
+            startTimer();
         }
 
-        function syncGameLoop() {
-            const startTime = Math.floor(Date.now() / 1000);
+        function startTimer() {
+            timerSeconds = SELECTION_PHASE_SEC;
+            document.getElementById('timer-val').innerText = timerSeconds;
             
-            const timerInterval = setInterval(() => {
-                const now = Math.floor(Date.now() / 1000);
-                const elapsed = now - startTime;
-                const timeLeft = SELECTION_PHASE_SEC - elapsed;
-
-                if (timeLeft >= 0) {
-                    document.getElementById('timer-val').innerText = timeLeft;
-                } else {
-                    // 25 seconds finished
+            if(timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                document.getElementById('timer-val').innerText = timerSeconds;
+                
+                if (timerSeconds <= 0) {
+                    // Check if player selected a card
                     if (selectedID) {
-                        // Success: Player selected a card
                         clearInterval(timerInterval);
                         startGame(0);
                     } else {
-                        // Fail: No card selected, reset timer
-                        location.reload(); 
+                        // Reset timer if no selection
+                        timerSeconds = SELECTION_PHASE_SEC;
+                        document.getElementById('timer-val').innerText = timerSeconds;
                     }
                 }
             }, 1000);
@@ -315,7 +315,7 @@
             
             // Shuffle
             for (let i = gameBalls.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
+                let j = Math.floor(Math.random() * (i + 1));
                 [gameBalls[i], gameBalls[j]] = [gameBalls[j], gameBalls[i]];
             }
 
