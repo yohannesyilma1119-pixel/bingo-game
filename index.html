@@ -97,7 +97,7 @@
         .last-ball-flash { animation: blinker 0.8s linear infinite; background: #e67e22 !important; color: white !important; border: 2px solid white !important; }
         @keyframes blinker { 50% { opacity: 0.4; } }
 
-        .bingo-btn { background:#ff8c00; color:white; border:none; width: 100%; padding:15px; border-radius:15px; font-weight:bold; font-size:26px; box-shadow: 0 6px 0 #cc6600; cursor: pointer; margin-top: 10px; }
+        .bingo-btn { background:#ff8c00; color:white; border:none; width: 100%; padding:15px; border-radius:15px; font-weight:bold; font-size:26px; box-shadow: 0 66px 0 #cc6600; cursor: pointer; margin-top: 10px; }
 
         #win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
         
@@ -120,10 +120,10 @@
         <button class="sel-btn" style="width: 200px; padding: 15px;" onclick="registerPlayer()">ይግቡ</button>
     </div>
 
-    <div id="waiting-room" class="hidden">
+    <div id="waiting-room">
         <h2 style="font-size: 28px;">እንኳን ደህና መጡ!</h2>
         <p style="padding: 0 20px;">ጨዋታው ገና አልተጀመረም። ለመጀመር "START" የሚለውን ይጫኑ ወይም ሌሎች እስኪጀምሩ ይጠብቁ።</p>
-        <button class="bingo-btn" style="width: 80%; max-width: 300px;" onclick="triggerStart()">START / ጀምር</button>
+        <button class="bingo-btn" style="width: 80%; max-width: 300px;" onclick="handleStartClick()">START / ጀምር</button>
     </div>
 
     <div id="dash-select" class="dashboard hidden">
@@ -184,7 +184,6 @@
 
     <script>
         // CONFIG
-        const GAME_INTERVAL_SEC = 300; 
         const SELECTION_PHASE_SEC = 25; 
 
         let wallet = parseInt(localStorage.getItem('bingoWallet')) || 50;
@@ -196,23 +195,29 @@
         let calledNums = [];
         let voiceReady = false;
         let callInterval = null;
-        let timerSeconds = SELECTION_PHASE_SEC;
-        let timerInterval = null;
+        let timerVal = SELECTION_PHASE_SEC;
+        let gameTimer = null;
 
         const stake = 10;
-        const playersCount = 3; // 2 testers + 1 You
+        const playersCount = 3; // 2 testers + You
         const commissionPerPlayer = 2;
         const derashAmount = (stake * playersCount) - (commissionPerPlayer * playersCount);
 
         function initAudio() { voiceReady = true; }
 
         window.onload = () => {
+            document.getElementById('wallet-select').innerText = wallet;
+            initBoard();
+            initSelectionGrid();
+        };
+
+        function handleStartClick() {
             if(!playerName) {
                 document.getElementById('reg-modal').classList.remove('hidden');
             } else {
-                setupUI();
+                goToSelection();
             }
-        };
+        }
 
         function registerPlayer() {
             let name = document.getElementById('player-name-input').value.trim();
@@ -220,42 +225,32 @@
             playerName = name;
             localStorage.setItem('bingoPlayerName', playerName);
             document.getElementById('reg-modal').classList.add('hidden');
-            setupUI();
+            goToSelection();
         }
 
-        function setupUI() {
-            document.getElementById('wallet-select').innerText = wallet;
-            initBoard();
-            initSelectionGrid();
-            document.getElementById('waiting-room').classList.remove('hidden');
-        }
-
-        function triggerStart() {
+        function goToSelection() {
             document.getElementById('waiting-room').classList.add('hidden');
             document.getElementById('dash-select').classList.remove('hidden');
             document.getElementById('select-screen').classList.remove('hidden');
-            startTimer();
+            startSelectionTimer();
         }
 
-        function startTimer() {
-            timerSeconds = SELECTION_PHASE_SEC;
-            document.getElementById('timer-val').innerText = timerSeconds;
+        function startSelectionTimer() {
+            timerVal = SELECTION_PHASE_SEC;
+            document.getElementById('timer-val').innerText = timerVal;
             
-            if(timerInterval) clearInterval(timerInterval);
-            
-            timerInterval = setInterval(() => {
-                timerSeconds--;
-                document.getElementById('timer-val').innerText = timerSeconds;
-                
-                if (timerSeconds <= 0) {
-                    // Check if player selected a card
-                    if (selectedID) {
-                        clearInterval(timerInterval);
-                        startGame(0);
+            gameTimer = setInterval(() => {
+                timerVal--;
+                document.getElementById('timer-val').innerText = timerVal;
+
+                if(timerVal <= 0) {
+                    if(selectedID) {
+                        clearInterval(gameTimer);
+                        startGame();
                     } else {
-                        // Reset timer if no selection
-                        timerSeconds = SELECTION_PHASE_SEC;
-                        document.getElementById('timer-val').innerText = timerSeconds;
+                        // Reset timer if no card is selected
+                        timerVal = SELECTION_PHASE_SEC;
+                        document.getElementById('timer-val').innerText = timerVal;
                     }
                 }
             }, 1000);
@@ -298,7 +293,7 @@
             }
         }
 
-        function startGame(elapsedInGame) {
+        function startGame() {
             gameStarted = true;
             document.getElementById('dash-select').classList.add('hidden');
             document.getElementById('dash-game').classList.remove('hidden');
@@ -310,12 +305,10 @@
             document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
             
             const callSpeed = 4200;
-            let gameBalls = [];
-            for(let i=1; i<=75; i++) gameBalls.push(i);
-            
-            // Shuffle
+            let gameBalls = Array.from({length: 75}, (_, i) => i + 1);
+            // Fisher-Yates Shuffle
             for (let i = gameBalls.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
+                const j = Math.floor(Math.random() * (i + 1));
                 [gameBalls[i], gameBalls[j]] = [gameBalls[j], gameBalls[i]];
             }
 
