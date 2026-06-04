@@ -133,8 +133,8 @@
     </div>
 
     <div id="dash-game" class="dashboard game-mode hidden">
-        <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="derash-val">24</div></div>
-        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val">3</div></div>
+        <div class="stat-item"><span class="stat-label">DERASH</span><div class="stat-val" id="derash-val">0</div></div>
+        <div class="stat-item"><span class="stat-label">PLAYERS</span><div class="stat-val" id="players-count-val">1</div></div>
         <div class="stat-item"><span class="stat-label">BET</span><div class="stat-val">10</div></div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
         <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val" id="game-id-active">882</div></div>
@@ -197,9 +197,11 @@
         let gameTimer = null;
 
         const stake = 10;
-        const playersCount = 3; 
         const commissionPerPlayer = 2;
-        const derashAmount = (stake * playersCount) - (commissionPerPlayer * playersCount);
+
+        // MATCHMAKING VARIABLES
+        let currentPlayers = 1; 
+        let derashAmount = (stake * currentPlayers) - (commissionPerPlayer * currentPlayers);
 
         function initAudio() { voiceReady = true; }
 
@@ -235,8 +237,22 @@
             document.getElementById('timer-val').innerText = timerVal;
             
             gameTimer = setInterval(() => {
+                // MATCHMAKING SIMULATION
+                // ካርቴላ ከመረጠ በኋላ በየጊዜው ሌሎች ተጫዋቾች በራንደም እንዲገቡ የማድረግ ሲሙሌሽን
+                if (selectedID && currentPlayers < 4 && Math.random() > 0.8) {
+                    currentPlayers++;
+                }
+
+                // ህግ 1: 1 ተጫዋች ብቻ ከሆነ ሰዓቱ አይቀንስም፣ "WAIT" እያለ ሌላ ሰው ይጠብቃል
+                if (currentPlayers <= 1) {
+                    document.getElementById('timer-val').innerText = "WAIT";
+                    return; 
+                }
+
+                // ህግ 2: 2 እና ከዚያ በላይ ሰው ሲሆን ቆጠራው ይቀጥላል (አዲስ ሰው በመሃል ቢገባ የነበረው ሰዓት አይስተጓጎልም)
                 timerVal--;
                 document.getElementById('timer-val').innerText = timerVal;
+                
                 if(timerVal <= 0) {
                     if(selectedID) {
                         clearInterval(gameTimer);
@@ -288,9 +304,12 @@
 
         function startGame() {
             gameStarted = true;
+            derashAmount = (stake * currentPlayers) - (commissionPerPlayer * currentPlayers);
+            
             document.getElementById('dash-select').classList.add('hidden');
             document.getElementById('dash-game').classList.remove('hidden');
             document.getElementById('derash-val').innerText = derashAmount;
+            document.getElementById('players-count-val').innerText = currentPlayers;
             document.getElementById('select-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
             document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
