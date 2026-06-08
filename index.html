@@ -238,7 +238,6 @@
             
             gameTimer = setInterval(() => {
                 // MATCHMAKING SIMULATION
-                // ካርቴላ ከመረጠ በኋላ በየጊዜው ሌሎች ተጫዋቾች በራንደም እንዲገቡ የማድረግ ሲሙሌሽን
                 if (selectedID && currentPlayers < 4 && Math.random() > 0.8) {
                     currentPlayers++;
                 }
@@ -249,17 +248,18 @@
                     return; 
                 }
 
-                // ህግ 2: 2 እና ከዚያ በላይ ሰው ሲሆን ቆጠራው ይቀጥላል (አዲስ ሰው በመሃል ቢገባ የነበረው ሰዓት አይስተጓጎልም)
+                // ህግ 2: 2 እና ከዚያ በላይ ሰው ሲሆን ቆጠራው ይቀጥላል
                 timerVal--;
                 document.getElementById('timer-val').innerText = timerVal;
                 
                 if(timerVal <= 0) {
+                    clearInterval(gameTimer);
                     if(selectedID) {
-                        clearInterval(gameTimer);
                         startGame();
                     } else {
                         timerVal = SELECTION_PHASE_SEC;
                         document.getElementById('timer-val').innerText = timerVal;
+                        startSelectionFlow();
                     }
                 }
             }, 1000);
