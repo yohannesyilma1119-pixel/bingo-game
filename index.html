@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BINGO HUB - Professional Sync</title>
+    <title>BINGO HUB - Multiplayer Sync</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { 
             --primary-bg: #d1b3ff; 
@@ -46,7 +48,6 @@
         .stat-label { font-size: 8px; color: #8e44ad; font-weight: bold; display: block; }
         .stat-val { font-size: 12px; font-weight: bold; }
 
-        /* አዲስ የመቆጣጠሪያ ቁልፎች ስታይል */
         .toggle-btn { background: #bdc3c7; color: white; border: none; font-size: 9px; padding: 2px 4px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 2px; }
         .toggle-btn.active { background: #2ecc71; }
 
@@ -55,7 +56,6 @@
         .selection-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
         .sel-btn { background: #ff8c00; color: white; border: none; padding: 10px 0; border-radius: 8px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 0 #cc6600; cursor: pointer; }
         .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; transform: translateY(2px); }
-        
         .sel-btn.taken { background: #e74c3c !important; box-shadow: 0 3px 0 #c0392b !important; cursor: not-allowed; opacity: 0.85; }
 
         .preview-container { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 200px; }
@@ -109,7 +109,7 @@
         #win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
         
         #reg-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel-purple); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .reg-input { padding: 15px; border-radius: 10px; border: none; width: 80%; max-width: 300px; font-size: 18px; margin-bottom: 20px; text-align: center; }
+        .reg-input { padding: 15px; border-radius: 10px; border: none; width: 80%; max-width: 300px; font-size: 18px; margin-bottom: 12px; text-align: center; }
         
         #waiting-room { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel-purple); z-index: 2500; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white; }
 
@@ -121,9 +121,10 @@
     <div id="wait-banner" class="hidden">Wait for the Next Game...</div>
 
     <div id="reg-modal" class="hidden">
-        <h2 style="color: white; margin-bottom: 10px;">BINGO HUB</h2>
-        <p style="color: #e0cfe0; margin-bottom: 20px;">እባክዎ ስምዎን ያስገቡ</p>
+        <h2 style="color: white; margin-bottom: 5px;">BINGO HUB</h2>
+        <p style="color: #e0cfe0; margin-bottom: 15px;">ስምዎን እና የክፍል ቁጥር ያስገቡ</p>
         <input type="text" id="player-name-input" class="reg-input" placeholder="ስም እዚህ ይጻፉ..." maxlength="12">
+        <input type="number" id="room-id-input" class="reg-input" placeholder="የክፍል ቁጥር (ለምሳሌ 882)..." value="882">
         <button class="sel-btn" style="width: 200px; padding: 15px;" onclick="registerPlayer()">ይግቡ</button>
     </div>
 
@@ -139,7 +140,7 @@
             <span class="stat-label">AUTO-MARK</span>
             <button id="auto-btn" class="toggle-btn" onclick="toggleAuto()">OFF</button>
         </div>
-        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val" id="game-id-select">882</div></div>
+        <div class="stat-item"><span class="stat-label">ROOM#</span><div class="stat-val" id="game-id-select">882</div></div>
     </div>
 
     <div id="dash-game" class="dashboard game-mode hidden">
@@ -150,7 +151,7 @@
             <button id="mute-btn" class="toggle-btn active" onclick="toggleMute()">SOUND</button>
         </div>
         <div class="stat-item"><span class="stat-label">CALL</span><div class="stat-val" id="call-counter">0</div></div>
-        <div class="stat-item"><span class="stat-label">GAME#</span><div class="stat-val" id="game-id-active">882</div></div>
+        <div class="stat-item"><span class="stat-label">ROOM#</span><div class="stat-val" id="game-id-active">882</div></div>
     </div>
 
     <div id="select-screen" class="hidden">
@@ -195,10 +196,23 @@
     </div>
 
     <script>
-        const SELECTION_PHASE_SEC = 25; 
+        // ያንተ እውነተኛ የ Firebase መረጃዎች እዚህ ገብተዋል!
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqsviOaqwwgdHGi-6P5FR0Dg9P2MZQNGc",
+            authDomain: "bingo-hub-cb6de.firebaseapp.com",
+            databaseURL: "https://bingo-hub-cb6de-default-rtdb.firebaseio.com", 
+            projectId: "bingo-hub-cb6de",
+            storageBucket: "bingo-hub-cb6de.firebasestorage.app",
+            messagingSenderId: "1064055833071",
+            appId: "1:1064055833071:web:8707ca9ea777e41ee0f61a"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         let wallet = parseInt(localStorage.getItem('bingoWallet')) || 50;
         let playerName = localStorage.getItem('bingoPlayerName') || "";
+        let roomID = "882";
         let selectedID = null;
         let gameStarted = false;
         let hasPaid = false; 
@@ -206,110 +220,204 @@
         let voiceReady = false;
         let isMuted = false;
         let isAutoMark = false;
-        let callInterval = null;
-        let timerVal = SELECTION_PHASE_SEC;
-        let gameTimer = null;
-
         const stake = 10;
         const commissionPerPlayer = 2;
 
-        let currentPlayers = 1; 
-        let derashAmount = 0;
-        
-        // 3ቱ የሳምፕል ተጫዋቾች ስምና መረጃ
-        let simulatedOpponents = [
-            { name: "ዮናስ", cardID: null, activeCells: [12] }, // 12 ነፃው ክፍል ነው
-            { name: "አስቴር", cardID: null, activeCells: [12] },
-            { name: "በቀለ", cardID: null, activeCells: [12] }
-        ];
-        let opponentJoinedIndex = 0;
-
         function initAudio() { voiceReady = true; }
-
         function toggleMute() {
             isMuted = !isMuted;
             const btn = document.getElementById('mute-btn');
-            if(isMuted) { btn.innerText = "MUTE"; btn.classList.remove('active'); }
-            else { btn.innerText = "SOUND"; btn.classList.add('active'); }
+            btn.innerText = isMuted ? "MUTE" : "SOUND";
+            btn.classList.toggle('active', !isMuted);
         }
-
         function toggleAuto() {
             isAutoMark = !isAutoMark;
             const btn = document.getElementById('auto-btn');
-            if(isAutoMark) { btn.innerText = "ON"; btn.classList.add('active'); }
-            else { btn.innerText = "OFF"; btn.classList.remove('active'); }
+            btn.innerText = isAutoMark ? "ON" : "OFF";
+            btn.classList.toggle('active', isAutoMark);
         }
 
         window.onload = () => {
             document.getElementById('wallet-select').innerText = wallet;
             initBoard();
             initSelectionGrid();
-            
-            if(!playerName) {
-                document.getElementById('reg-modal').classList.remove('hidden');
-            } else {
-                startSelectionFlow();
-            }
+            document.getElementById('reg-modal').classList.remove('hidden');
         };
 
         function registerPlayer() {
             let name = document.getElementById('player-name-input').value.trim();
+            let room = document.getElementById('room-id-input').value.trim();
             if(name.length < 2) { alert("እባክዎ ትክክለኛ ስም ያስገቡ!"); return; }
+            if(!room) { alert("እባክዎ የክፍል ቁጥር ያስገቡ!"); return; }
+            
             playerName = name;
+            roomID = room;
             localStorage.setItem('bingoPlayerName', playerName);
+            
+            document.getElementById('game-id-select').innerText = roomID;
+            document.getElementById('game-id-active').innerText = roomID;
             document.getElementById('reg-modal').classList.add('hidden');
-            startSelectionFlow();
+            
+            connectToFirebaseRoom();
         }
 
-        function startSelectionFlow() {
-            document.getElementById('waiting-room').classList.add('hidden');
+        function connectToFirebaseRoom() {
             document.getElementById('dash-select').classList.remove('hidden');
             document.getElementById('select-screen').classList.remove('hidden');
-            
-            if(gameTimer) clearInterval(gameTimer);
-            timerVal = SELECTION_PHASE_SEC;
-            document.getElementById('timer-val').innerText = timerVal;
-            
-            gameTimer = setInterval(() => {
-                // ተጫዋቾቹ በየተራ ገብተው ካርቴላ እንዲመርጡ ማድረግ
-                if (selectedID && opponentJoinedIndex < simulatedOpponents.length && Math.random() > 0.7) {
-                    let opp = simulatedOpponents[opponentJoinedIndex];
-                    let randCard;
-                    do {
-                        randCard = Math.floor(Math.random() * 200) + 1;
-                    } while(randCard === selectedID || simulatedOpponents.some(o => o.cardID === randCard));
-                    
-                    opp.cardID = randCard;
-                    currentPlayers++;
-                    opponentJoinedIndex++;
-                    
-                    // ግሪዱን በቀጥታ በቀይ መቆለፍ
-                    let btn = document.getElementById('grid-btn-' + randCard);
-                    if(btn) {
-                        btn.classList.add('taken');
-                        btn.onclick = () => { alert(`ይህ ካርቴላ በ${opp.name} ቀድሞ ተይዟል!`); };
+
+            // 1. የሰዓት ክትትል (Sync Timer)
+            db.ref(`rooms/${roomID}/timer`).on('value', (snapshot) => {
+                let t = snapshot.val();
+                if (t !== null) {
+                    document.getElementById('timer-val').innerText = t === "WAIT" ? "WAIT" : t;
+                }
+            });
+
+            // 2. የተያዙ ካርቴላዎችን ክትትል (Sync Card Selection)
+            db.ref(`rooms/${roomID}/selections`).on('value', (snapshot) => {
+                let data = snapshot.val() || {};
+                // ሁሉንም ግሪድ መጀመሪያ ነፃ አድርግ
+                for(let i=1; i<=200; i++) {
+                    let btn = document.getElementById('grid-btn-' + i);
+                    if(btn && i !== selectedID) {
+                        btn.className = 'sel-btn';
+                        btn.onclick = () => selectCard(i);
                     }
                 }
+                // የተያዙትን በቀይ መቆለፍ
+                let playerCount = 0;
+                Object.keys(data).forEach(pName => {
+                    playerCount++;
+                    let cID = data[pName];
+                    if(cID !== selectedID) {
+                        let btn = document.getElementById('grid-btn-' + cID);
+                        if(btn) {
+                            btn.classList.add('taken');
+                            btn.onclick = () => { alert(`ይህ ካርቴላ በ ${pName} ተይዟል!`); };
+                        }
+                    }
+                });
+                document.getElementById('players-count-val').innerText = playerCount;
+                let derash = (stake * playerCount) - (commissionPerPlayer * playerCount);
+                document.getElementById('derash-val').innerText = derash;
+            });
 
-                if (currentPlayers <= 1) {
-                    document.getElementById('timer-val').innerText = "WAIT";
-                    return; 
+            // 3. የጨዋታ መጀመር ክትትል (Sync Game Status)
+            db.ref(`rooms/${roomID}/status`).on('value', (snapshot) => {
+                if(snapshot.val() === "STARTED" && !gameStarted) {
+                    if(selectedID) { listenToLiveBalls(); } 
+                    else { 
+                        alert("የምርጫ ሰዓት አልቋል! በሚቀጥለው ዙር ይግቡ።");
+                        location.reload();
+                    }
                 }
+            });
 
-                timerVal--;
-                document.getElementById('timer-val').innerText = timerVal;
-                
-                if(timerVal <= 0) {
-                    clearInterval(gameTimer);
-                    if(selectedID) {
-                        startGame();
+            // 4. የአሸናፊዎች ክትትል (Sync Winner Overlay)
+            db.ref(`rooms/${roomID}/winner`).on('value', (snapshot) => {
+                let winData = snapshot.val();
+                if(winData) { triggerWinnerScreen(winData); }
+            });
+
+            // ክፍሉ ውስጥ መሪ (Host) መኖሩን መፈተሽ፣ ከሌለ ሰዓቱን የሚያስጀምር ሎጂክ
+            db.ref(`rooms/${roomID}/host`).transaction((currentHost) => {
+                if (currentHost === null) { return playerName; }
+                return currentHost; 
+            }, (error, committed, snapshot) => {
+                if (snapshot.val() === playerName) { runHostTimer(); }
+            });
+        }
+
+        function runHostTimer() {
+            let tVal = SELECTION_PHASE_SEC;
+            let interval = setInterval(() => {
+                db.ref(`rooms/${roomID}/selections`).once('value', (snap) => {
+                    let selections = snap.val() || {};
+                    let totalPlayers = Object.keys(selections).length;
+
+                    if (totalPlayers <= 1) {
+                        db.ref(`rooms/${roomID}/timer`).set("WAIT");
                     } else {
-                        timerVal = SELECTION_PHASE_SEC;
-                        document.getElementById('timer-val').innerText = timerVal;
-                        startSelectionFlow();
+                        tVal--;
+                        db.ref(`rooms/${roomID}/timer`).set(tVal);
+                        
+                        if(tVal <= 0) {
+                            clearInterval(interval);
+                            db.ref(`rooms/${roomID}/status`).set("STARTED");
+                            generateAndPushBalls();
+                        }
                     }
-                }
+                });
             }, 1000);
+        }
+
+        function selectCard(id) {
+            if (!hasPaid) {
+                if (wallet >= stake) {
+                    wallet -= stake; hasPaid = true;
+                    document.getElementById('wallet-select').innerText = wallet;
+                    localStorage.setItem('bingoWallet', wallet);
+                } else { alert("በቂ ብር የሎትም!"); return; }
+            }
+            if(selectedID) document.getElementById('grid-btn-' + selectedID)?.classList.remove('active');
+            selectedID = id;
+            document.getElementById('grid-btn-' + id).classList.add('active');
+            document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:9px;">' + genCardHTML(id, false) + '</table>';
+            
+            db.ref(`rooms/${roomID}/selections/${playerName}`).set(id);
+        }
+
+        function generateAndPushBalls() {
+            let balls = Array.from({length: 75}, (_, i) => i + 1);
+            for (let i = balls.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [balls[i], balls[j]] = [balls[j], balls[i]];
+            }
+            db.ref(`rooms/${roomID}/balls`).set(balls);
+        }
+
+        function listenToLiveBalls() {
+            gameStarted = true;
+            document.getElementById('select-screen').classList.add('hidden');
+            document.getElementById('dash-select').classList.add('hidden');
+            document.getElementById('dash-game').classList.remove('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
+            document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
+
+            db.ref(`rooms/${roomID}/balls`).on('value', (snapshot) => {
+                let allBalls = snapshot.val();
+                if(!allBalls) return;
+                
+                let idx = 0;
+                let speed = 4200;
+                let ballInterval = setInterval(() => {
+                    if(idx < allBalls.length) {
+                        let ball = allBalls[idx];
+                        calledNums.push(ball);
+                        let L = ball <= 15 ? 'B' : ball <= 30 ? 'I' : ball <= 45 ? 'N' : ball <= 60 ? 'G' : 'O';
+                        document.getElementById('ball-box').innerText = L + "-" + ball;
+                        document.getElementById('slot-'+ball).classList.add('num-called');
+                        document.getElementById('call-counter').innerText = calledNums.length;
+                        if(voiceReady && !isMuted) speak(L, ball);
+
+                        if(isAutoMark) {
+                            const cell = document.querySelector(`#game-card-body .card-cell[data-val="${ball}"]`);
+                            if(cell) cell.classList.add('cell-active');
+                        }
+                        idx++;
+                    } else { clearInterval(ballInterval); }
+                }, speed);
+                
+                db.ref(`rooms/${roomID}/winner`).on('value', (winSnap) => {
+                    if(winSnap.val()) clearInterval(ballInterval);
+                });
+            });
+        }
+
+        function speak(L, n) {
+            let am = L === 'B' ? 'ቢ' : L === 'I' ? 'አይ' : L === 'N' ? 'ኤን' : L === 'G' ? 'ጂ' : 'ኦ';
+            let m = new SpeechSynthesisUtterance(`${am} ${n}`); m.lang = 'am-ET'; window.speechSynthesis.speak(m);
         }
 
         function initBoard() {
@@ -330,139 +438,10 @@
             grid.innerHTML = '';
             for(let i=1; i<=200; i++) {
                 let b = document.createElement('button');
-                b.className = 'sel-btn';
-                b.id = 'grid-btn-' + i;
-                b.innerText = i;
-                
-                b.onclick = () => {
-                    if(selectedID) document.querySelector('.sel-btn.active')?.classList.remove('active');
-                    if (!hasPaid) {
-                        if (wallet >= stake) {
-                            wallet -= stake;
-                            hasPaid = true;
-                            document.getElementById('wallet-select').innerText = wallet;
-                            localStorage.setItem('bingoWallet', wallet);
-                        } else { alert("በቂ ብር የሎትም!"); return; }
-                    }
-                    selectedID = i;
-                    b.classList.add('active');
-                    document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:9px;">' + genCardHTML(i, false) + '</table>';
-                };
+                b.className = 'sel-btn'; b.id = 'grid-btn-' + i; b.innerText = i;
+                b.onclick = () => selectCard(i);
                 grid.appendChild(b);
             }
-        }
-
-        function startGame() {
-            gameStarted = true;
-            derashAmount = (stake * currentPlayers) - (commissionPerPlayer * currentPlayers);
-            
-            document.getElementById('dash-select').classList.add('hidden');
-            document.getElementById('dash-game').classList.remove('hidden');
-            document.getElementById('derash-val').innerText = derashAmount;
-            document.getElementById('players-count-val').innerText = currentPlayers;
-            document.getElementById('select-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('card-id-label').innerText = "CARD #" + selectedID;
-            document.getElementById('game-card-body').innerHTML = genCardHTML(selectedID, true);
-            
-            const callSpeed = 4200;
-            let gameBalls = Array.from({length: 75}, (_, i) => i + 1);
-            for (let i = gameBalls.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [gameBalls[i], gameBalls[j]] = [gameBalls[j], gameBalls[i]];
-            }
-
-            let currentIdx = 0;
-            callInterval = setInterval(() => {
-                if(currentIdx < 75) {
-                    const ball = gameBalls[currentIdx];
-                    calledNums.push(ball);
-                    let L = ball <= 15 ? 'B' : ball <= 30 ? 'I' : ball <= 45 ? 'N' : ball <= 60 ? 'G' : 'O';
-                    document.getElementById('ball-box').innerText = L + "-" + ball;
-                    document.getElementById('slot-'+ball).classList.add('num-called');
-                    
-                    // Bug Fix: ኳስ ሲጠራ ወዲያው እኩል እንዲቆጥር
-                    document.getElementById('call-counter').innerText = calledNums.length; 
-                    
-                    if(voiceReady && !isMuted) speak(L, ball);
-
-                    // AUTO-MARK LOGIC
-                    if(isAutoMark) {
-                        const cell = document.querySelector(`#game-card-body .card-cell[data-val="${ball}"]`);
-                        if(cell) cell.classList.add('cell-active');
-                    }
-
-                    // የሳምፕል ተጫዋቾችን ካርቴላ በጀርባ መፈተሽ
-                    checkOpponentsBingo(ball);
-
-                    currentIdx++;
-                }
-            }, callSpeed);
-        }
-
-        function speak(L, n) {
-            let am = L === 'B' ? 'ቢ' : L === 'I' ? 'አይ' : L === 'N' ? 'ኤን' : L === 'G' ? 'ጂ' : 'ኦ';
-            let m = new SpeechSynthesisUtterance(`${am} ${n}`); m.lang = 'am-ET'; window.speechSynthesis.speak(m);
-        }
-
-        function getCardNumbersArray(id) {
-            const seed = id * 55;
-            const getN = (s, min, max) => {
-                let r = []; while(r.length<5) { s=(s*9301+49297)%233280; let v=Math.floor((s/233280)*(max-min+1))+min; if(!r.includes(v)) r.push(v); }
-                return r.sort((a,b)=>a-b);
-            };
-            const cols = [getN(seed,1,15), getN(seed+1,16,30), getN(seed+2,31,45), getN(seed+3,46,60), getN(seed+4,61,75)];
-            let arr = [];
-            for(let i=0; i<5; i++) {
-                for(let j=0; j<5; j++) {
-                    arr.push(i===2 && j===2 ? 0 : cols[j][i]);
-                }
-            }
-            return arr;
-        }
-
-        function checkOpponentsBingo(lastBall) {
-            const patterns = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20],[0,4,20,24]];
-            
-            for(let i=0; i<opponentJoinedIndex; i++) {
-                let opp = simulatedOpponents[i];
-                let oppFlatCard = getCardNumbersArray(opp.cardID);
-                
-                // ማሽኑ የጠራው ቁጥር በሳምፕል ተጫዋቹ ካርቴላ ላይ ካለ ማርክ ያደርጋል
-                oppFlatCard.forEach((val, idx) => {
-                    if(val === lastBall && !opp.activeCells.includes(idx)) {
-                        opp.activeCells.push(idx);
-                    }
-                });
-
-                // የድል መንገድ መፈተሽ
-                for(let p of patterns) {
-                    let hasWon = p.every(idx => opp.activeCells.includes(idx));
-                    if(hasWon && (p.map(idx => oppFlatCard[idx]).includes(lastBall) || p.includes(12))) {
-                        triggerSimulationWin(opp, p, lastBall);
-                        return;
-                    }
-                }
-            }
-        }
-
-        function triggerSimulationWin(opp, pattern, lastBall) {
-            clearInterval(callInterval);
-            document.getElementById('win-status').innerText = "BINGO! 😞";
-            document.getElementById('wallet-update-msg').innerText = `${opp.name} ቀድሞ ቢንጎ በማለት አሸንፏል!`;
-            
-            const winnerBox = document.getElementById('winner-display');
-            winnerBox.innerHTML = `<div class="card-header-info">${opp.name} WINNING CARD #${opp.cardID}</div><table class="bingo-table">${genCardHTML(opp.cardID, false)}</table>`;
-            
-            const winCells = winnerBox.querySelectorAll('.card-cell');
-            pattern.forEach(idx => {
-                winCells[idx].classList.add('win-line-cell');
-                if(parseInt(winCells[idx].getAttribute('data-val')) === lastBall) winCells[idx].classList.add('last-ball-flash');
-            });
-            
-            document.getElementById('winner-info').innerHTML = `<span style='color:#e74c3c;'>አሸናፊ፡ ${opp.name}</span><br>ካርቴላ፡ #${opp.cardID} | ቁጥር፡ ${lastBall}`;
-            document.getElementById('win-overlay').classList.remove('hidden');
-            setTimeout(() => { location.reload(); }, 5000);
         }
 
         function genCardHTML(id, play) {
@@ -502,21 +481,48 @@
             }
 
             if (winningPattern) {
-                clearInterval(callInterval); 
-                document.getElementById('win-status').innerText = "BINGO! 🎉";
-                document.getElementById('wallet-update-msg').innerText = "እንኳን ደስ አለህ! " + derashAmount + " ብር አሸንፈሃል!";
-                localStorage.setItem('bingoWallet', (parseInt(localStorage.getItem('bingoWallet')) || 0) + derashAmount);
-                const winnerBox = document.getElementById('winner-display');
-                winnerBox.innerHTML = '<div class="card-header-info">WINNING CARD #'+selectedID+'</div><table class="bingo-table">' + genCardHTML(selectedID, false) + '</table>';
-                const winCells = winnerBox.querySelectorAll('.card-cell');
-                winningPattern.forEach(idx => {
-                    winCells[idx].classList.add('win-line-cell');
-                    if(parseInt(winCells[idx].getAttribute('data-val')) === lastBall) winCells[idx].classList.add('last-ball-flash');
+                let pCount = parseInt(document.getElementById('players-count-val').innerText);
+                let derash = (stake * pCount) - (commissionPerPlayer * pCount);
+                
+                db.ref(`rooms/${roomID}/winner`).set({
+                    name: playerName,
+                    cardID: selectedID,
+                    lastBall: lastBall,
+                    pattern: winningPattern,
+                    derash: derash
                 });
-                document.getElementById('winner-info').innerHTML = `<span style='color:#f1c40f;'>አሸናፊ፡ ${playerName}</span><br>ካርቴላ፡ #${selectedID} | ቁጥር፡ ${lastBall}`;
-                document.getElementById('win-overlay').classList.remove('hidden');
-                setTimeout(() => { location.reload(); }, 5000);
             } else { alert("የድል መንገዶችን አላሟላህም ወይም የመጨረሻው ቁጥር አልወጣ!!"); }
+        }
+
+        function triggerWinnerScreen(winData) {
+            if(winData.name === playerName) {
+                document.getElementById('win-status').innerText = "BINGO! 🎉";
+                document.getElementById('wallet-update-msg').innerText = "እንኳን ደስ አለህ! " + winData.derash + " ብር አሸንፈሃል!";
+                wallet += winData.derash;
+                localStorage.setItem('bingoWallet', wallet);
+            } else {
+                document.getElementById('win-status').innerText = "BINGO! 😞";
+                document.getElementById('wallet-update-msg').innerText = `${winData.name} ቀድሞ አሸንፏል!`;
+            }
+
+            const winnerBox = document.getElementById('winner-display');
+            winnerBox.innerHTML = `<div class="card-header-info">${winData.name} WINNING CARD #${winData.cardID}</div><table class="bingo-table">${genCardHTML(winData.cardID, false)}</table>`;
+            
+            const winCells = winnerBox.querySelectorAll('.card-cell');
+            winData.pattern.forEach(idx => {
+                winCells[idx].classList.add('win-line-cell');
+                if(parseInt(winCells[idx].getAttribute('data-val')) === winData.lastBall) winCells[idx].classList.add('last-ball-flash');
+            });
+            
+            document.getElementById('winner-info').innerHTML = `አሸናፊ፡ ${winData.name}<br>ካርቴላ፡ #${winData.cardID} | ቁጥር፡ ${winData.lastBall}`;
+            document.getElementById('win-overlay').classList.remove('hidden');
+            
+            setTimeout(() => {
+                db.ref(`rooms/${roomID}/host`).once('value', (snap) => {
+                    if(snap.val() === playerName) { db.ref(`rooms/${roomID}`).remove(); }
+                    location.reload();
+                });
+            }, 6000);
         }
     </script>
 </body>
