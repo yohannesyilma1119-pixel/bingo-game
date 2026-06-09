@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BINGO HUB - Multiplayer Sync</title>
+    <title>BINGO HUB - Multiplayer Fixed</title>
+    <!-- Firebase SDK Libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -120,6 +121,7 @@
 
     <div id="wait-banner" class="hidden">Wait for the Next Game...</div>
 
+    <!-- መግቢያ ገጽ -->
     <div id="reg-modal" class="hidden">
         <h2 style="color: white; margin-bottom: 5px;">BINGO HUB</h2>
         <p style="color: #e0cfe0; margin-bottom: 15px;">ስምዎን እና የክፍል ቁጥር ያስገቡ</p>
@@ -196,7 +198,7 @@
     </div>
 
     <script>
-        // ያንተ እውነተኛ የ Firebase መረጃዎች እዚህ ገብተዋል!
+        const SELECTION_PHASE_SEC = 25;
         const firebaseConfig = {
             apiKey: "AIzaSyAqsviOaqwwgdHGi-6P5FR0Dg9P2MZQNGc",
             authDomain: "bingo-hub-cb6de.firebaseapp.com",
@@ -265,7 +267,6 @@
             document.getElementById('dash-select').classList.remove('hidden');
             document.getElementById('select-screen').classList.remove('hidden');
 
-            // 1. የሰዓት ክትትል (Sync Timer)
             db.ref(`rooms/${roomID}/timer`).on('value', (snapshot) => {
                 let t = snapshot.val();
                 if (t !== null) {
@@ -273,10 +274,8 @@
                 }
             });
 
-            // 2. የተያዙ ካርቴላዎችን ክትትል (Sync Card Selection)
             db.ref(`rooms/${roomID}/selections`).on('value', (snapshot) => {
                 let data = snapshot.val() || {};
-                // ሁሉንም ግሪድ መጀመሪያ ነፃ አድርግ
                 for(let i=1; i<=200; i++) {
                     let btn = document.getElementById('grid-btn-' + i);
                     if(btn && i !== selectedID) {
@@ -284,7 +283,6 @@
                         btn.onclick = () => selectCard(i);
                     }
                 }
-                // የተያዙትን በቀይ መቆለፍ
                 let playerCount = 0;
                 Object.keys(data).forEach(pName => {
                     playerCount++;
@@ -302,7 +300,6 @@
                 document.getElementById('derash-val').innerText = derash;
             });
 
-            // 3. የጨዋታ መጀመር ክትትል (Sync Game Status)
             db.ref(`rooms/${roomID}/status`).on('value', (snapshot) => {
                 if(snapshot.val() === "STARTED" && !gameStarted) {
                     if(selectedID) { listenToLiveBalls(); } 
@@ -313,13 +310,11 @@
                 }
             });
 
-            // 4. የአሸናፊዎች ክትትል (Sync Winner Overlay)
             db.ref(`rooms/${roomID}/winner`).on('value', (snapshot) => {
                 let winData = snapshot.val();
                 if(winData) { triggerWinnerScreen(winData); }
             });
 
-            // ክፍሉ ውስጥ መሪ (Host) መኖሩን መፈተሽ፣ ከሌለ ሰዓቱን የሚያስጀምር ሎጂክ
             db.ref(`rooms/${roomID}/host`).transaction((currentHost) => {
                 if (currentHost === null) { return playerName; }
                 return currentHost; 
