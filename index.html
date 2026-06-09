@@ -51,6 +51,9 @@
         .sel-btn { background: #ff8c00; color: white; border: none; padding: 10px 0; border-radius: 8px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 0 #cc6600; cursor: pointer; }
         .sel-btn.active { background: #119a4d !important; box-shadow: 0 3px 0 #0d7a3d !important; transform: translateY(2px); }
         
+        /* የተያዙ ካርቴላዎች ማሳያ ስታይል */
+        .sel-btn.taken { background: #e74c3c !important; box-shadow: 0 3px 0 #c0392b !important; cursor: not-allowed; opacity: 0.85; }
+
         .preview-container { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 200px; }
         #preview-box { width: 100%; display: flex; justify-content: center; transform: scale(0.8); }
 
@@ -202,21 +205,38 @@
         // MATCHMAKING VARIABLES
         let currentPlayers = 1; 
         let derashAmount = (stake * currentPlayers) - (commissionPerPlayer * currentPlayers);
+        
+        // የሌሎች ተጫዋቾች የተያዙ ቁጥሮች ዝርዝር
+        let takenCards = [];
 
         function initAudio() { voiceReady = true; }
 
         window.onload = () => {
             document.getElementById('wallet-select').innerText = wallet;
+            
+            // የዘፈቀደ የሌሎች ተጫዋቾች ካርቴላ ቁጥሮችን አስቀድሞ መያዝ (Simulation)
+            generateTakenCards();
+            
             initBoard();
             initSelectionGrid();
             
-            // AUTOMATIC FLOW: If name exists, go straight to selection
             if(!playerName) {
                 document.getElementById('reg-modal').classList.remove('hidden');
             } else {
                 startSelectionFlow();
             }
         };
+
+        // የሌሎች ሰዎችን ምርጫ በዘፈቀደ ለመሙላት
+        function generateTakenCards() {
+            takenCards = [];
+            while(takenCards.length < 15) {
+                let rand = Math.floor(Math.random() * 200) + 1;
+                if(!takenCards.includes(rand)) {
+                    takenCards.push(rand);
+                }
+            }
+        }
 
         function registerPlayer() {
             let name = document.getElementById('player-name-input').value.trim();
@@ -237,18 +257,15 @@
             document.getElementById('timer-val').innerText = timerVal;
             
             gameTimer = setInterval(() => {
-                // MATCHMAKING SIMULATION
                 if (selectedID && currentPlayers < 4 && Math.random() > 0.8) {
                     currentPlayers++;
                 }
 
-                // ህግ 1: 1 ተጫዋች ብቻ ከሆነ ሰዓቱ አይቀንስም፣ "WAIT" እያለ ሌላ ሰው ይጠብቃል
                 if (currentPlayers <= 1) {
                     document.getElementById('timer-val').innerText = "WAIT";
                     return; 
                 }
 
-                // ህግ 2: 2 እና ከዚያ በላይ ሰው ሲሆን ቆጠራው ይቀጥላል
                 timerVal--;
                 document.getElementById('timer-val').innerText = timerVal;
                 
@@ -280,24 +297,35 @@
 
         function initSelectionGrid() {
             const grid = document.getElementById('grid');
+            grid.innerHTML = ''; // ግሪዱን ማጽዳት
             for(let i=1; i<=200; i++) {
                 let b = document.createElement('button');
                 b.className = 'sel-btn';
                 b.innerText = i;
-                b.onclick = () => {
-                    if(selectedID) document.querySelector('.sel-btn.active')?.classList.remove('active');
-                    if (!hasPaid) {
-                        if (wallet >= stake) {
-                            wallet -= stake;
-                            hasPaid = true;
-                            document.getElementById('wallet-select').innerText = wallet;
-                            localStorage.setItem('bingoWallet', wallet);
-                        } else { alert("በቂ ብር የሎትም!"); return; }
-                    }
-                    selectedID = i;
-                    b.classList.add('active');
-                    document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:9px;">' + genCardHTML(i, false) + '</table>';
-                };
+                
+                // ቁጥሩ በሌላ ሰው ቀድሞ ከተያዘ
+                if(takenCards.includes(i)) {
+                    b.classList.add('taken');
+                    b.onclick = () => {
+                        alert("ይህ ካርቴላ በሌላ ተጫዋች ቀድሞ ተይዟል! እባክዎ ሌላ ይምረጡ።");
+                    };
+                } else {
+                    // ነፃ ቁጥር ከሆነ ምርጫውን ማስተናገድ
+                    b.onclick = () => {
+                        if(selectedID) document.querySelector('.sel-btn.active')?.classList.remove('active');
+                        if (!hasPaid) {
+                            if (wallet >= stake) {
+                                wallet -= stake;
+                                hasPaid = true;
+                                document.getElementById('wallet-select').innerText = wallet;
+                                localStorage.setItem('bingoWallet', wallet);
+                            } else { alert("በቂ ብር የሎትም!"); return; }
+                        }
+                        selectedID = i;
+                        b.classList.add('active');
+                        document.getElementById('preview-box').innerHTML = '<table class="bingo-table" style="font-size:9px;">' + genCardHTML(i, false) + '</table>';
+                    };
+                }
                 grid.appendChild(b);
             }
         }
